@@ -19,7 +19,34 @@ export type ScreenItem = {
   height: number;
   /** Orden de colocación: 0 al centro, y de ahí alternando a los costados. */
   slot: number;
+  /** La medida se ajusta a mano en vez de salir de la lista del catálogo. */
+  custom: boolean;
 };
+
+export type ScreenSize = { width: number; height: number };
+
+/** Medidas que la empresa arma habitualmente. Es lo que ofrece el desplegable. */
+export const SCREEN_PRESETS: ScreenSize[] = [
+  { width: 3, height: 2 },
+  { width: 4, height: 2 },
+  { width: 4, height: 2.5 },
+  { width: 4, height: 3 },
+  { width: 5, height: 3 },
+  { width: 6, height: 3 },
+  { width: 6, height: 4 },
+  { width: 7, height: 4 },
+  { width: 8, height: 5 },
+  { width: 10, height: 4 },
+  { width: 10, height: 5 },
+  { width: 12, height: 6 },
+];
+
+/** La primera pantalla es la principal; las que se agregan después, laterales. */
+export const DEFAULT_MAIN: ScreenSize = { width: 6, height: 4 };
+export const DEFAULT_SIDE: ScreenSize = { width: 3, height: 2 };
+
+export const sizeKey = (size: ScreenSize) => `${size.width}x${size.height}`;
+export const isPreset = (size: ScreenSize) => SCREEN_PRESETS.some((preset) => preset.width === size.width && preset.height === size.height);
 
 /** Más pantallas que esto no entran en cuadro ni se leen bien en el presupuesto. */
 export const MAX_SCREENS = 6;
@@ -52,10 +79,12 @@ function freeSlot(list: ScreenItem[]) {
   return slot;
 }
 
-export function addScreen(list: ScreenItem[], kind: ScreenKind, size?: { width: number; height: number }) {
+export function addScreen(list: ScreenItem[], kind: ScreenKind, size?: ScreenSize) {
   if (list.length >= MAX_SCREENS) return list;
-  const measures = kind === "E-Poster" ? EPOSTER_SIZE : (size ?? { width: 6, height: 4 });
-  return [...list, { id: freeId(list), kind, width: measures.width, height: measures.height, slot: freeSlot(list) }];
+  const measures = kind === "E-Poster"
+    ? EPOSTER_SIZE
+    : (size ?? (list.length === 0 ? DEFAULT_MAIN : DEFAULT_SIDE));
+  return [...list, { id: freeId(list), kind, width: measures.width, height: measures.height, slot: freeSlot(list), custom: false }];
 }
 
 /** Nunca deja el escenario sin ninguna pantalla. */
@@ -69,19 +98,33 @@ export function updateScreen(list: ScreenItem[], id: string, patch: Partial<Pick
     if (item.id !== id) return item;
     const next = { ...item, ...patch };
     // Cambiar a tótem impone la medida fija; salir de tótem recupera una medida usable.
-    if (patch.kind === "E-Poster") return { ...next, ...EPOSTER_SIZE };
-    if (patch.kind && item.kind === "E-Poster") return { ...next, width: 6, height: 4 };
+    if (patch.kind === "E-Poster") return { ...next, ...EPOSTER_SIZE, custom: false };
+    if (patch.kind && item.kind === "E-Poster") return { ...next, ...DEFAULT_MAIN, custom: false };
     return next;
   });
+}
+
+/** Elegir una medida del desplegable sale del modo personalizado. */
+export function setScreenSize(list: ScreenItem[], id: string, size: ScreenSize) {
+  return list.map((item) => (item.id === id ? { ...item, ...size, custom: false } : item));
+}
+
+/** Al pasar a personalizada se conserva la medida actual como punto de partida. */
+export function setScreenCustom(list: ScreenItem[], id: string, custom: boolean) {
+  return list.map((item) => (item.id === id ? { ...item, custom } : item));
 }
 
 export const clampToStep = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, Math.round(value / SIZE_STEP) * SIZE_STEP));
 
-/** Ajusta una medida respetando el paso de gabinete y los topes. */
+/**
+ * Ajusta una medida respetando el paso de gabinete y los topes. Sólo aplica
+ * en modo personalizado: una pantalla tomada del catálogo no puede terminar
+ * con una medida que no está en la lista.
+ */
 export function resizeScreen(list: ScreenItem[], id: string, axis: "width" | "height", delta: number) {
   return list.map((item) => {
-    if (item.id !== id || item.kind === "E-Poster") return item;
+    if (item.id !== id || item.kind === "E-Poster" || !item.custom) return item;
     const limits = axis === "width"
       ? [SIZE_LIMITS.minWidth, SIZE_LIMITS.maxWidth]
       : [SIZE_LIMITS.minHeight, SIZE_LIMITS.maxHeight];

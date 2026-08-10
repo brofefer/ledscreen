@@ -1,5 +1,9 @@
 import { catalogOf } from "../../data/catalog";
-import { MAX_SCREENS, SIZE_LIMITS, formatMeters, type ScreenItem, type ScreenKind } from "../../data/screens";
+import {
+  MAX_SCREENS, SCREEN_PRESETS, SIZE_LIMITS,
+  formatMeters, screenSizeLabel, sizeKey,
+  type ScreenItem, type ScreenKind, type ScreenSize,
+} from "../../data/screens";
 import { useState } from "react";
 
 type Props = {
@@ -8,12 +12,16 @@ type Props = {
     addScreen: (kind: ScreenKind) => void;
     removeScreen: (id: string) => void;
     setScreenKind: (id: string, kind: ScreenKind) => void;
+    setScreenSize: (id: string, size: ScreenSize) => void;
+    setScreenCustom: (id: string, custom: boolean) => void;
     resizeScreen: (id: string, axis: "width" | "height", delta: number) => void;
     changeUnits: (key: string, delta: number) => void;
     toggleGroup: (key: string) => void;
     toggleExtra: (value: string) => void;
   };
 };
+
+const CUSTOM = "custom";
 
 const TYPES: Array<{ value: ScreenKind; label: string; description: string }> = [
   { value: "LED Outdoor", label: "LED Outdoor", description: "Eventos grandes y al aire libre. Resiste lluvia, máxima calidad." },
@@ -46,9 +54,27 @@ function ScreenCard({ screen, index, canRemove, actions }: { screen: ScreenItem;
     <p className="screen-card-hint">{type?.description}</p>
     {screen.kind === "E-Poster"
       ? <p className="screen-card-fixed">Medida fija de 1 × 2 m.</p>
-      : <div className="size-steppers">
-        <SizeStepper label="Ancho" value={screen.width} min={SIZE_LIMITS.minWidth} max={SIZE_LIMITS.maxWidth} onChange={(delta) => actions.resizeScreen(screen.id, "width", delta)} />
-        <SizeStepper label="Alto" value={screen.height} min={SIZE_LIMITS.minHeight} max={SIZE_LIMITS.maxHeight} onChange={(delta) => actions.resizeScreen(screen.id, "height", delta)} />
+      : <div className="screen-size">
+        <label>
+          <span>Medida</span>
+          <select
+            value={screen.custom ? CUSTOM : sizeKey(screen)}
+            onChange={(event) => {
+              if (event.target.value === CUSTOM) { actions.setScreenCustom(screen.id, true); return; }
+              const preset = SCREEN_PRESETS.find((option) => sizeKey(option) === event.target.value);
+              if (preset) actions.setScreenSize(screen.id, preset);
+            }}
+          >
+            {SCREEN_PRESETS.map((preset) => <option key={sizeKey(preset)} value={sizeKey(preset)}>{screenSizeLabel(preset)}</option>)}
+            {/* Una medida a medida no está en la lista: se muestra igual para no perderla. */}
+            {screen.custom && <option value={CUSTOM}>Personalizada — {screenSizeLabel(screen)}</option>}
+            {!screen.custom && <option value={CUSTOM}>Personalizada…</option>}
+          </select>
+        </label>
+        {screen.custom && <div className="size-steppers">
+          <SizeStepper label="Ancho" value={screen.width} min={SIZE_LIMITS.minWidth} max={SIZE_LIMITS.maxWidth} onChange={(delta) => actions.resizeScreen(screen.id, "width", delta)} />
+          <SizeStepper label="Alto" value={screen.height} min={SIZE_LIMITS.minHeight} max={SIZE_LIMITS.maxHeight} onChange={(delta) => actions.resizeScreen(screen.id, "height", delta)} />
+        </div>}
       </div>}
   </div>;
 }

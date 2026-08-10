@@ -32,6 +32,8 @@ export function useConfigurator() {
   const addScreen = useCallback((kind: ScreenKind) => setScreens((current) => screensApi.addScreen(current, kind)), []);
   const removeScreen = useCallback((id: string) => setScreens((current) => screensApi.removeScreen(current, id)), []);
   const setScreenKind = useCallback((id: string, kind: ScreenKind) => setScreens((current) => screensApi.updateScreen(current, id, { kind })), []);
+  const setScreenSize = useCallback((id: string, size: screensApi.ScreenSize) => setScreens((current) => screensApi.setScreenSize(current, id, size)), []);
+  const setScreenCustom = useCallback((id: string, custom: boolean) => setScreens((current) => screensApi.setScreenCustom(current, id, custom)), []);
   const resizeScreen = useCallback((id: string, axis: "width" | "height", delta: number) => (
     setScreens((current) => screensApi.resizeScreen(current, id, axis, delta))
   ), []);
@@ -59,12 +61,14 @@ export function useConfigurator() {
     addScreen,
     removeScreen,
     setScreenKind,
+    setScreenSize,
+    setScreenCustom,
     resizeScreen,
     changeUnits,
     toggleGroup,
     toggleExtra,
     removeSceneInstance,
-  }), [addScreen, removeScreen, setScreenKind, resizeScreen, changeUnits, toggleGroup, toggleExtra, removeSceneInstance]);
+  }), [addScreen, removeScreen, setScreenKind, setScreenSize, setScreenCustom, resizeScreen, changeUnits, toggleGroup, toggleExtra, removeSceneInstance]);
 
   return useMemo(() => ({
     config: { screens, items: list, counts, extras },

@@ -912,7 +912,31 @@ a:hover { color: oklch(0.86 0.12 230) }
 .screen-card-hint { margin: 9px 0 0; font-size: 11px; line-height: 1.45; color: #929baa }
 .screen-card-fixed { margin: 10px 0 0; font-size: 11px; font-weight: 600; color: var(--accent-link) }
 
-.size-steppers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 11px }
+.screen-size { margin-top: 11px }
+.screen-size label { display: flex; flex-direction: column; gap: 5px }
+.screen-size label > span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dim) }
+.screen-size select {
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, .13);
+  background: rgba(255, 255, 255, .04);
+  color: #e7edf4;
+  border-radius: 9px;
+  padding: 9px 32px 9px 11px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  /* Flecha dibujada, para no depender de la del sistema sobre fondo oscuro. */
+  background-image: linear-gradient(45deg, transparent 50%, #9aa3b0 50%), linear-gradient(135deg, #9aa3b0 50%, transparent 50%);
+  background-position: right 15px center, right 11px center;
+  background-size: 4px 4px, 4px 4px;
+  background-repeat: no-repeat;
+}
+.screen-size select:hover, .screen-size select:focus { border-color: var(--accent); outline: none }
+.screen-size option { background: #11151c; color: #e7edf4 }
+
+.size-steppers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 9px }
 .size-stepper { display: flex; flex-direction: column; gap: 5px }
 .size-stepper > span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dim) }
 .size-stepper > div { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: 4px; text-align: center }

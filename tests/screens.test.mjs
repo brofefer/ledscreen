@@ -6,8 +6,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  EPOSTER_SIZE, MAX_SCREENS, SCREEN_GAP,
-  addScreen, layoutScreens, removeScreen, resizeScreen, screenSizeLabel, stageSpanOf, tallestOf, updateScreen,
+  DEFAULT_MAIN, DEFAULT_SIDE, EPOSTER_SIZE, MAX_SCREENS, SCREEN_GAP,
+  addScreen, isPreset, layoutScreens, removeScreen, resizeScreen, screenSizeLabel,
+  setScreenCustom, setScreenSize, stageSpanOf, tallestOf, updateScreen,
 } from "../data/screens.ts";
 
 const base = () => addScreen([], "LED Outdoor", { width: 6, height: 4 });
@@ -99,12 +100,12 @@ test("varios tótems son varias pantallas, no un contador", () => {
 });
 
 test("la medida se mueve de a medio metro", () => {
-  const list = resizeScreen(base(), "screen-1", "width", 1);
+  const list = resizeScreen(setScreenCustom(base(), "screen-1", true), "screen-1", "width", 1);
   assert.equal(list[0].width, 6.5);
 });
 
 test("la medida respeta los topes", () => {
-  let list = addScreen([], "LED Outdoor", { width: 12, height: 6 });
+  let list = setScreenCustom(addScreen([], "LED Outdoor", { width: 12, height: 6 }), "screen-1", true);
   list = resizeScreen(list, list[0].id, "width", 1);
   assert.equal(list[0].width, 12, "no pasa de 12 m de ancho");
   list = resizeScreen(list, list[0].id, "height", 1);
@@ -114,7 +115,7 @@ test("la medida respeta los topes", () => {
 });
 
 test("el tótem no se puede redimensionar", () => {
-  const list = resizeScreen(addScreen([], "E-Poster"), "screen-1", "width", 4);
+  const list = resizeScreen(setScreenCustom(addScreen([], "E-Poster"), "screen-1", true), "screen-1", "width", 4);
   assert.equal(list[0].width, EPOSTER_SIZE.width);
 });
 
@@ -126,4 +127,54 @@ test("el truss se cuelga sobre la pantalla más alta", () => {
   let list = addScreen([], "LED Indoor", { width: 3, height: 2 });
   list = addScreen(list, "LED Outdoor", { width: 8, height: 5 });
   assert.equal(tallestOf(list), 5);
+});
+
+/* ---- desplegable de medidas + "Personalizada" ---- */
+
+test("la primera pantalla arranca en la medida principal y las siguientes como laterales", () => {
+  let list = addScreen([], "LED Outdoor");
+  assert.deepEqual({ w: list[0].width, h: list[0].height }, { w: 6, h: 4 }, "principal 6 × 4");
+  list = addScreen(list, "LED Outdoor");
+  assert.deepEqual({ w: list[1].width, h: list[1].height }, { w: 3, h: 2 }, "lateral 3 × 2");
+  list = addScreen(list, "LED Outdoor");
+  assert.deepEqual({ w: list[2].width, h: list[2].height }, { w: 3, h: 2 });
+});
+
+test("todas las medidas por defecto están en el desplegable", () => {
+  assert.ok(isPreset(DEFAULT_MAIN));
+  assert.ok(isPreset(DEFAULT_SIDE));
+});
+
+test("las pantallas nuevas no arrancan en modo personalizado", () => {
+  assert.equal(addScreen([], "LED Outdoor")[0].custom, false);
+});
+
+test("elegir una medida de la lista sale del modo personalizado", () => {
+  let list = setScreenCustom(base(), "screen-1", true);
+  list = resizeScreen(list, "screen-1", "width", 1);       // 6,5 m: fuera del catálogo
+  assert.equal(list[0].custom, true);
+  list = setScreenSize(list, "screen-1", { width: 8, height: 5 });
+  assert.equal(list[0].custom, false);
+  assert.deepEqual({ w: list[0].width, h: list[0].height }, { w: 8, h: 5 });
+});
+
+test("pasar a personalizada conserva la medida como punto de partida", () => {
+  const list = setScreenCustom(addScreen([], "LED Outdoor", { width: 8, height: 5 }), "screen-1", true);
+  assert.deepEqual({ w: list[0].width, h: list[0].height }, { w: 8, h: 5 });
+});
+
+test("sólo se puede redimensionar en modo personalizado", () => {
+  // El panel oculta los steppers, pero la regla vive en el modelo.
+  const fixed = resizeScreen(base(), "screen-1", "width", 1);
+  assert.equal(fixed[0].width, 6, "sin modo personalizado la medida no se mueve");
+});
+
+test("cambiar de tipo vuelve a una medida del catálogo", () => {
+  let list = setScreenCustom(base(), "screen-1", true);
+  list = resizeScreen(list, "screen-1", "width", 1);
+  list = updateScreen(list, "screen-1", { kind: "E-Poster" });
+  assert.equal(list[0].custom, false);
+  list = updateScreen(list, "screen-1", { kind: "LED Indoor" });
+  assert.equal(list[0].custom, false);
+  assert.ok(isPreset(list[0]), "queda en una medida ofrecible");
 });
