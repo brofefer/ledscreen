@@ -10,11 +10,12 @@ const Scene3D = lazy(() => import("../scene/Scene3D"));
 
 export default function Configurator() {
   const { config, actions, sizeIndex, eposterQuantity } = useConfigurator();
+  const scene = <Suspense fallback={<SceneLoader />}><Scene3D screenType={config.screen.type} screenQuantity={config.screen.quantity} width={config.screen.width} height={config.screen.height} items={config.items} extras={config.extras} onRemoveObject={actions.removeSceneInstance} /></Suspense>;
   return <section id="cotizador" className="configurator-section">
     <div className="configurator-layout">
-      <div className="mobile-scene"><Suspense fallback={<SceneLoader />}><Scene3D screenType={config.screen.type} screenQuantity={config.screen.quantity} width={config.screen.width} height={config.screen.height} sound={config.sound} lighting={config.lighting} extras={config.extras} onRemoveObject={actions.removeSceneInstance} /></Suspense></div>
+      <div className="mobile-scene">{scene}</div>
       <ConfiguratorPanel config={config} actions={actions} sizeIndex={sizeIndex} eposterQuantity={eposterQuantity} />
-      <div className="desktop-scene"><Suspense fallback={<SceneLoader />}><Scene3D screenType={config.screen.type} screenQuantity={config.screen.quantity} width={config.screen.width} height={config.screen.height} sound={config.sound} lighting={config.lighting} extras={config.extras} onRemoveObject={actions.removeSceneInstance} /></Suspense></div>
+      <div className="desktop-scene">{scene}</div>
     </div>
     <QuoteSummary config={config} />
   </section>;
