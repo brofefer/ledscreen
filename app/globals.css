@@ -921,27 +921,54 @@ a:hover { color: oklch(0.86 0.12 230) }
 .screen-scene-label strong { font-family: var(--display); font-weight: 700; font-size: 11px; color: #f2f7fa }
 .screen-scene-label i { width: 1px; height: 14px; background: rgba(255, 255, 255, .18) }
 .screen-scene-label span { font-family: var(--display); font-weight: 600; font-size: 10px; color: var(--accent) }
+/* Tarjeta "Tu paquete", con la anatomía del prototipo: una fila por ítem. */
 .quote-summary {
   max-width: 1500px;
   margin: 18px auto 0;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .03);
+}
+.quote-summary-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 14px }
+.quote-summary-head strong { font-family: var(--display); font-weight: 700; font-size: 18px }
+.quote-summary-head span { font-size: 13px; color: var(--dim); font-weight: 600 }
+.quote-summary-rows {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+.quote-summary-rows li {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 18px 22px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: #10131a;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .07);
 }
-.quote-summary div { display: flex; flex-direction: column; gap: 4px }
-.quote-summary span { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted) }
-.quote-summary a {
-  background: var(--accent);
-  color: #071015;
+.quote-summary-rows span { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--accent-link); min-width: 74px }
+.quote-summary-rows strong { flex: 1; font-size: 14px; font-weight: 600; color: var(--text) }
+.quote-summary-cta { display: flex; flex-direction: column; align-items: center; gap: 10px }
+.quote-summary-cta a {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  font-family: var(--display);
   font-weight: 700;
+  font-size: 16px;
+  color: var(--bg);
+  background: var(--accent);
   border-radius: 999px;
-  padding: 13px 18px;
+  padding: 15px;
+  box-shadow: 0 0 26px oklch(0.72 0.17 230 / .4);
 }
-.quote-summary a:hover { color: #071015; background: var(--accent-hi) }
+.quote-summary-cta a:hover { color: var(--bg); background: var(--accent-hi) }
+.quote-summary-cta small { font-size: 12px; color: #6b7180 }
 /* ============ fin bloque cotizador ============ */
 
 /* ---------- 05 FAQ ---------- */
@@ -1190,7 +1217,8 @@ footer .brand span { font-size: 16px }
     min-height: 310px;
   }
   .config-panel > p { margin-bottom: 0 }
-  .quote-summary { margin: 12px; border-radius: 14px; align-items: flex-start; gap: 18px; flex-direction: column }
+  .quote-summary { margin: 12px; padding: 18px; border-radius: 14px }
+  .quote-summary-cta a { max-width: none }
   .viewer-help { display: none }
   .mobile-category-tabs {
     position: sticky;
