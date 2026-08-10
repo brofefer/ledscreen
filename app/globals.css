@@ -886,23 +886,56 @@ a:hover { color: oklch(0.86 0.12 230) }
 .scene-loader strong { font-family: var(--display); font-weight: 600; font-size: 13px; margin-top: 5px }
 .scene-loader small { color: #71808e }
 .mobile-category-tabs { display: none }
-.screen-type-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px }
-.screen-type-card {
-  cursor: pointer;
-  min-height: 125px;
-  padding: 14px;
-  text-align: left;
+/* Lista de pantallas: una tarjeta por pantalla, con su tipo y su medida. */
+.screen-list { display: flex; flex-direction: column; gap: 10px }
+.screen-card {
+  padding: 13px 14px;
   border: 1px solid rgba(255, 255, 255, .11);
   border-radius: 13px;
   background: rgba(255, 255, 255, .025);
-  color: #eef2f7;
-  transition: border-color .2s, background .2s, box-shadow .2s;
 }
-.screen-type-card strong, .screen-type-card span { display: block }
-.screen-type-card strong { font-family: var(--display); font-weight: 700; font-size: 14px; margin-bottom: 7px }
-.screen-type-card span { font-size: 11px; line-height: 1.45; color: #929baa }
-.screen-type-card.active { border-color: var(--accent); background: oklch(0.72 0.17 230 / .1); box-shadow: inset 0 0 0 1px oklch(0.72 0.17 230 / .08) }
-.eposter-quantity-title { margin-top: 22px }
+.screen-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px }
+.screen-card-head strong { font-family: var(--display); font-weight: 700; font-size: 13px; color: #eef2f7 }
+.screen-card-remove {
+  cursor: pointer;
+  border: 1px solid rgba(255, 90, 110, .3);
+  background: none;
+  color: #ff9aa5;
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.screen-card-remove:hover { background: rgba(255, 70, 95, .16); border-color: rgba(255, 90, 110, .65) }
+.screen-card .chips { gap: 6px }
+.screen-card .chip { padding: 7px 10px; font-size: 12px }
+.screen-card-hint { margin: 9px 0 0; font-size: 11px; line-height: 1.45; color: #929baa }
+.screen-card-fixed { margin: 10px 0 0; font-size: 11px; font-weight: 600; color: var(--accent-link) }
+
+.size-steppers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 11px }
+.size-stepper { display: flex; flex-direction: column; gap: 5px }
+.size-stepper > span { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dim) }
+.size-stepper > div { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: 4px; text-align: center }
+.size-stepper button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, .13);
+  background: rgba(255, 255, 255, .04);
+  color: #e7edf4;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.size-stepper button:hover:not(:disabled) { border-color: var(--accent) }
+.size-stepper button:disabled { opacity: .28; cursor: not-allowed }
+.size-stepper strong { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--accent) }
+
+.add-screen { margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255, 255, 255, .1) }
+.add-screen > span { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px }
+.add-screen .chip { font-size: 12px; padding: 8px 11px }
+.add-screen .chip:disabled { opacity: .35; cursor: not-allowed }
+.add-screen > small { display: block; margin-top: 8px; font-size: 11px; color: #6b7180 }
 .screen-scene-label {
   position: absolute;
   top: 20px;
@@ -1244,8 +1277,6 @@ footer .brand span { font-size: 16px }
   .mobile-category-tabs button.active { background: oklch(0.72 0.17 230 / .13); border-color: oklch(0.72 0.17 230 / .45); color: #e5fbff }
   .mobile-pane { display: none }
   .mobile-pane.mobile-active { display: block }
-  .screen-type-cards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 5px }
-  .screen-type-card { flex: 0 0 155px; scroll-snap-align: start }
   .screen-scene-label { top: 14px; max-width: 48%; overflow: hidden; text-overflow: ellipsis }
   .screen-scene-label strong, .screen-scene-label span { font-size: 9px }
   .viewer-badge { display: none }

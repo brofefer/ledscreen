@@ -10,9 +10,10 @@
  */
 
 export type QuoteCatalogEntry = { key: string; label: string; category: "sound" | "lighting" };
+export type QuoteScreen = { kind: string; width: number; height: number };
 
 export type QuoteInput = {
-  screen: { type: string; label: string; quantity: number };
+  screens: QuoteScreen[];
   /** Unidades por clave de catálogo. */
   counts: Record<string, number>;
   extras: string[];
@@ -22,17 +23,32 @@ export type QuoteInput = {
 
 export type SummaryRow = { category: "Pantalla" | "Sonido" | "Iluminación" | "Servicios"; label: string };
 
-/** Texto corto de la pantalla elegida. */
-export function screenLabelOf(screen: QuoteInput["screen"]) {
-  if (screen.type === "E-Poster") {
-    return `E-Poster 1×2 — ${screen.quantity} ${screen.quantity === 1 ? "tótem" : "tótems"}`;
+const meters = (value: number) => String(value).replace(".", ",");
+
+/** Etiqueta de una pantalla suelta: tipo y medida. */
+export function screenLabelOf(screen: QuoteScreen) {
+  if (screen.kind === "E-Poster") return "E-Poster 1×2";
+  return `${screen.kind} — ${meters(screen.width)} × ${meters(screen.height)} m`;
+}
+
+/**
+ * Agrupa las pantallas idénticas para no repetir renglones: tres tótems
+ * iguales se leen "E-Poster 1×2 × 3", no tres veces lo mismo.
+ */
+export function groupedScreens(screens: QuoteScreen[]) {
+  const groups: Array<{ label: string; count: number }> = [];
+  for (const screen of screens) {
+    const label = screenLabelOf(screen);
+    const existing = groups.find((group) => group.label === label);
+    if (existing) existing.count += 1;
+    else groups.push({ label, count: 1 });
   }
-  return `${screen.type} — ${screen.label}`;
+  return groups.map(({ label, count }) => (count > 1 ? `${label} × ${count}` : label));
 }
 
 /** Una fila por ítem elegido, en el orden en que se muestran. */
-export function summaryRows({ screen, counts, extras, catalog }: QuoteInput): SummaryRow[] {
-  const rows: SummaryRow[] = [{ category: "Pantalla", label: screenLabelOf(screen) }];
+export function summaryRows({ screens, counts, extras, catalog }: QuoteInput): SummaryRow[] {
+  const rows: SummaryRow[] = groupedScreens(screens).map((label) => ({ category: "Pantalla" as const, label }));
   const units = (category: "sound" | "lighting") => catalog
     .filter((entry) => entry.category === category && (counts[entry.key] ?? 0) > 0)
     .map((entry) => `${entry.label} × ${counts[entry.key]}`);
@@ -46,7 +62,8 @@ export function summaryRows({ screen, counts, extras, catalog }: QuoteInput): Su
 export function quoteLines(input: QuoteInput) {
   const rows = summaryRows(input);
   const pick = (category: SummaryRow["category"]) => rows.filter((row) => row.category === category).map((row) => row.label);
-  const lines = [`Pantalla: ${screenLabelOf(input.screen)}`];
+  const screens = pick("Pantalla");
+  const lines = [`${input.screens.length > 1 ? "Pantallas" : "Pantalla"}: ${screens.join(", ")}`];
   for (const category of ["Sonido", "Iluminación", "Servicios"] as const) {
     const picked = pick(category);
     if (picked.length) lines.push(`${category}: ${picked.join(", ")}`);

@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { SCREEN_SIZES } from "../data/screenSizes";
 import { catalogEntry, itemSpec, type ItemCategory } from "../data/catalog";
 import * as items from "../data/sceneItems";
 import type { SceneItem } from "../data/sceneItems";
+import * as screensApi from "../data/screens";
+import type { ScreenItem, ScreenKind } from "../data/screens";
 
-export type ScreenType = "LED Outdoor" | "LED Indoor" | "E-Poster";
-export type { SceneItem };
+export type { SceneItem, ScreenItem, ScreenKind };
+/** Se mantiene el nombre anterior: el tipo de una pantalla suelta. */
+export type ScreenType = ScreenKind;
 
 export function useConfigurator() {
-  const [screenType, setScreenType] = useState<ScreenType>("LED Outdoor");
-  const [sizeIndex, setSizeIndex] = useState(6);
-  const [eposterQuantity, setEposterQuantity] = useState(2);
+  const [screens, setScreens] = useState<ScreenItem[]>(() => screensApi.addScreen([], "LED Outdoor", { width: 6, height: 4 }));
   const [list, setList] = useState<SceneItem[]>([]);
   const [extras, setExtras] = useState<string[]>([]);
 
@@ -29,10 +29,21 @@ export function useConfigurator() {
     current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
   )), []);
 
+  const addScreen = useCallback((kind: ScreenKind) => setScreens((current) => screensApi.addScreen(current, kind)), []);
+  const removeScreen = useCallback((id: string) => setScreens((current) => screensApi.removeScreen(current, id)), []);
+  const setScreenKind = useCallback((id: string, kind: ScreenKind) => setScreens((current) => screensApi.updateScreen(current, id, { kind })), []);
+  const resizeScreen = useCallback((id: string, axis: "width" | "height", delta: number) => (
+    setScreens((current) => screensApi.resizeScreen(current, id, axis, delta))
+  ), []);
+
   /** Borrado desde el menú contextual de la escena: quita esa instancia y ninguna otra. */
   const removeSceneInstance = useCallback((id: string) => {
     if (id === "dj-area") {
       setExtras((current) => current.filter((item) => item !== "Consola DJ" && item !== "DJ"));
+      return;
+    }
+    if (id.startsWith("screen-")) {
+      setScreens((current) => screensApi.removeScreen(current, id));
       return;
     }
     setList((current) => items.removeUnit(current, id));
@@ -44,32 +55,20 @@ export function useConfigurator() {
     list.filter((item) => catalogEntry(item.key)?.category === category)
   ), [list]);
 
-  const screen = useMemo(() => (
-    screenType === "E-Poster"
-      ? { label: "1 × 2 m", width: 1, height: 2 }
-      : SCREEN_SIZES[sizeIndex]
-  ), [screenType, sizeIndex]);
-
   const actions = useMemo(() => ({
-    setScreenType,
-    setSizeIndex,
-    setEposterQuantity,
+    addScreen,
+    removeScreen,
+    setScreenKind,
+    resizeScreen,
     changeUnits,
     toggleGroup,
     toggleExtra,
     removeSceneInstance,
-  }), [changeUnits, toggleGroup, toggleExtra, removeSceneInstance]);
+  }), [addScreen, removeScreen, setScreenKind, resizeScreen, changeUnits, toggleGroup, toggleExtra, removeSceneInstance]);
 
   return useMemo(() => ({
-    config: {
-      screen: { type: screenType, ...screen, quantity: screenType === "E-Poster" ? eposterQuantity : 1 },
-      items: list,
-      counts,
-      extras,
-    },
+    config: { screens, items: list, counts, extras },
     actions,
     itemsOf,
-    sizeIndex,
-    eposterQuantity,
-  }), [screenType, screen, list, counts, extras, actions, itemsOf, sizeIndex, eposterQuantity]);
+  }), [screens, list, counts, extras, actions, itemsOf]);
 }

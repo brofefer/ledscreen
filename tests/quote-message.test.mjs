@@ -6,7 +6,7 @@
  */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { quoteLines, quoteMessage, screenLabelOf, summaryRows, whatsappHref } from "../data/quoteMessage.ts";
+import { groupedScreens, quoteLines, quoteMessage, screenLabelOf, summaryRows, whatsappHref } from "../data/quoteMessage.ts";
 
 // Espejo de `data/catalog.ts`, en el mismo orden.
 const catalog = [
@@ -19,21 +19,35 @@ const catalog = [
   { key: "strobe", label: "Strobe", category: "lighting" },
 ];
 
-const input = (over = {}) => ({
-  screen: { type: "LED Outdoor", label: "6 × 4 m", quantity: 1 },
-  counts: {},
-  extras: [],
-  catalog,
-  ...over,
-});
+const outdoor = { kind: "LED Outdoor", width: 6, height: 4 };
+const totem = { kind: "E-Poster", width: 1, height: 2 };
 
-test("una configuración vacía deja sólo la pantalla", () => {
+const input = (over = {}) => ({ screens: [outdoor], counts: {}, extras: [], catalog, ...over });
+
+test("una configuración mínima deja sólo la pantalla", () => {
   assert.deepEqual(quoteLines(input()), ["Pantalla: LED Outdoor — 6 × 4 m"]);
 });
 
-test("el E-Poster informa la cantidad de tótems, en singular y plural", () => {
-  assert.equal(screenLabelOf({ type: "E-Poster", label: "1 × 2 m", quantity: 1 }), "E-Poster 1×2 — 1 tótem");
-  assert.equal(screenLabelOf({ type: "E-Poster", label: "1 × 2 m", quantity: 3 }), "E-Poster 1×2 — 3 tótems");
+test("el tótem se nombra por su tipo, sin repetir la medida", () => {
+  assert.equal(screenLabelOf(totem), "E-Poster 1×2");
+});
+
+test("la medida usa coma decimal", () => {
+  assert.equal(screenLabelOf({ kind: "LED Indoor", width: 4, height: 2.5 }), "LED Indoor — 4 × 2,5 m");
+});
+
+test("con varias pantallas el renglón pasa a plural", () => {
+  const lines = quoteLines(input({ screens: [outdoor, { kind: "LED Indoor", width: 3, height: 2 }] }));
+  assert.equal(lines[0], "Pantallas: LED Outdoor — 6 × 4 m, LED Indoor — 3 × 2 m");
+});
+
+test("las pantallas idénticas se agrupan en vez de repetirse", () => {
+  assert.deepEqual(groupedScreens([totem, totem, totem]), ["E-Poster 1×2 × 3"]);
+});
+
+test("agrupar distingue medidas distintas del mismo tipo", () => {
+  const screens = [outdoor, outdoor, { kind: "LED Outdoor", width: 3, height: 2 }];
+  assert.deepEqual(groupedScreens(screens), ["LED Outdoor — 6 × 4 m × 2", "LED Outdoor — 3 × 2 m"]);
 });
 
 test("cada equipo lleva su cantidad real", () => {
@@ -46,7 +60,6 @@ test("cada equipo lleva su cantidad real", () => {
 });
 
 test("una luminaria borrada baja la cantidad, no desaparece el renglón", () => {
-  // Es el caso de la captura: se agregaron 4 PAR LED y se borró uno.
   const lines = quoteLines(input({ counts: { "par-led": 3 } }));
   assert.equal(lines[1], "Iluminación: PAR LED × 3");
 });
@@ -69,11 +82,11 @@ test("se respeta el orden del catálogo, no el de selección", () => {
 });
 
 test("el resumen en pantalla tiene una fila por ítem, con su categoría", () => {
-  const rows = summaryRows(input({ counts: { "jbl-vrx": 2, "sharpy": 4 }, extras: ["DJ"] }));
+  const rows = summaryRows(input({ screens: [outdoor, totem, totem], counts: { "jbl-vrx": 2 }, extras: ["DJ"] }));
   assert.deepEqual(rows, [
     { category: "Pantalla", label: "LED Outdoor — 6 × 4 m" },
+    { category: "Pantalla", label: "E-Poster 1×2 × 2" },
     { category: "Sonido", label: "JBL VRX × 2" },
-    { category: "Iluminación", label: "Sharpy × 4" },
     { category: "Servicios", label: "DJ" },
   ]);
 });
@@ -100,7 +113,6 @@ test("el enlace de WhatsApp codifica saltos de línea y acentos", () => {
   assert.ok(href.startsWith("https://wa.me/595981123456?text="));
   assert.ok(href.includes("%0A"), "los saltos de línea van codificados");
   assert.ok(!href.includes(" "), "no deben quedar espacios sin codificar");
-  // El texto se recupera intacto del otro lado.
   const text = decodeURIComponent(href.split("?text=")[1]);
   assert.ok(text.includes("Pantalla: LED Outdoor — 6 × 4 m"));
 });
