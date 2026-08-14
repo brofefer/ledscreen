@@ -1,6 +1,6 @@
 "use client";
 
-import { ContactShadows, Environment } from "@react-three/drei";
+import { ContactShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
 import CameraController, { CameraControllerHandle } from "./CameraController";
@@ -15,6 +15,8 @@ import { useAdaptiveQuality } from "../../hooks/useAdaptiveQuality";
 import type { SceneItem } from "../../data/sceneItems";
 import { screenSizeLabel, stageSpanOf, tallestOf, type ScreenItem } from "../../data/screens";
 import { catalogEntry } from "../../data/catalog";
+import { DEFAULT_ENVIRONMENT, ENVIRONMENTS, environmentOf, type EnvironmentKey } from "../../data/environments";
+import SceneSurroundings from "./SceneSurroundings";
 
 type Props = {
   screens: ScreenItem[];
@@ -27,10 +29,12 @@ export default function Scene3D({ screens, items, extras, onRemoveObject }: Prop
   const controls = useRef<CameraControllerHandle>(null);
   const [lightsEnabled, setLightsEnabled] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
+  const [environmentKey, setEnvironmentKey] = useState<EnvironmentKey>(DEFAULT_ENVIRONMENT);
   const [selected, setSelected] = useState<{ id: string; label: string; transform: SceneTransform } | null>(null);
   const [interactionMode, setInteractionMode] = useState<"camera" | "move">("camera");
   const sceneObjects = useSceneObjects();
   const quality = useAdaptiveQuality();
+  const environment = environmentOf(environmentKey);
 
   // Todo el escenario se dimensiona por el conjunto de pantallas, no por una sola.
   const stageSpan = stageSpanOf(screens);
@@ -68,25 +72,29 @@ export default function Scene3D({ screens, items, extras, onRemoveObject }: Prop
 
   return <div className="scene-shell">
     <Canvas shadows={quality.shadows} dpr={quality.dpr} onPointerMissed={() => { if (interactionMode === "camera") setSelected(null); }} camera={{ position: [0, 1.68, 12.5], fov: 48, near: 0.1, far: 80 }} gl={{ antialias: !quality.lowPower, powerPreference: "high-performance" }}>
-      <color attach="background" args={["#090c12"]} />
-      <fog attach="fog" args={["#090c12", 17, 34]} />
-      <hemisphereLight intensity={0.85} color="#d8f3ff" groundColor="#11131a" />
-      <directionalLight position={[5, 10, 7]} intensity={2.1} castShadow={quality.shadows} shadow-mapSize={[quality.shadowMapSize, quality.shadowMapSize]} />
+      <color attach="background" args={[environment.background]} />
+      <fog attach="fog" args={[environment.fog.color, environment.fog.near, environment.fog.far]} />
+      <hemisphereLight intensity={environment.hemisphere.intensity} color={environment.hemisphere.sky} groundColor={environment.hemisphere.ground} />
+      <directionalLight position={environment.sun.position} color={environment.sun.color} intensity={environment.sun.intensity} castShadow={quality.shadows} shadow-mapSize={[quality.shadowMapSize, quality.shadowMapSize]} />
+      <directionalLight position={[0, 3, 12]} color={environment.fill.color} intensity={environment.fill.intensity} />
       <Suspense fallback={null}>
-        <Stage width={stageSpan} />
+        <SceneSurroundings environment={environment} span={stageSpan} />
+        <Stage width={stageSpan} environment={environment} />
         {showTruss && <Truss width={stageSpan} height={tallest} />}
         <ScreenLayer screens={screens} stageSpan={stageSpan} transforms={sceneObjects.transforms} selectedId={selectedId} moveMode={moveMode} onSelect={selectObject} onChange={changeObject} onToggleMove={toggleObjectMove} onReset={resetObject} onRemove={removeObject} />
         <ReferencePerson screenWidth={stageSpan} />
         <EquipmentLayer items={soundItems} extras={extras} screenWidth={stageSpan} transforms={sceneObjects.transforms} selectedId={selectedId} moveMode={moveMode} onSelect={selectObject} onChange={changeObject} onToggleMove={toggleObjectMove} onReset={resetObject} onRemove={removeObject} />
         <LightingLayer items={lightingItems} screenWidth={stageSpan} screenHeight={tallest} enabled={lightsEnabled} demo={demoMode} transforms={sceneObjects.transforms} selectedId={selectedId} moveMode={moveMode} onSelect={selectObject} onChange={changeObject} onToggleMove={toggleObjectMove} onReset={resetObject} onRemove={removeObject} />
-        {!quality.lowPower && <ContactShadows position={[0, 0.01, 0]} opacity={0.55} scale={22} blur={2.2} far={8} />}
-        <Environment preset="city" environmentIntensity={0.3} />
+        {!quality.lowPower && <ContactShadows position={[0, 0.01, 0]} opacity={environment.contactShadow} scale={22} blur={2.2} far={8} />}
       </Suspense>
       <CameraController ref={controls} enabled={!moveMode} screenWidth={stageSpan} />
     </Canvas>
     <div className="viewer-badge"><span /> 1 unidad = 1 metro</div>
     <div className="screen-scene-label"><strong>{sceneLabel.title}</strong><i /><span>{sceneLabel.detail}</span></div>
     <button className="reset-view" onClick={() => controls.current?.reset()}>Centrar vista</button>
+    <div className="environment-controls" role="group" aria-label="Ambiente del escenario">{ENVIRONMENTS.map((option) => (
+      <button key={option.key} className={environmentKey === option.key ? "active" : ""} aria-pressed={environmentKey === option.key} title={option.hint} onClick={() => setEnvironmentKey(option.key)}>{option.label}</button>
+    ))}</div>
     <div className="lighting-controls"><button className={lightsEnabled ? "active" : ""} aria-pressed={lightsEnabled} onClick={() => setLightsEnabled((value) => !value)}>Luces {lightsEnabled ? "ON" : "OFF"}</button><button className={demoMode ? "active" : ""} aria-pressed={demoMode} onClick={() => setDemoMode((value) => !value)}>Modo demo</button></div>
     <div className="viewer-help">Arrastrá para mirar · Pellizcá o desplazá para acercar</div>
   </div>;
