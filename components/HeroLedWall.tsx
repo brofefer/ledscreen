@@ -10,12 +10,12 @@ export default function HeroLedWall() {
     if (!canvas) return;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const vw = window.innerWidth;
-    const cols = Math.max(24, vw < 600 ? 34 : vw < 900 ? 46 : 64);
+    const cols = Math.max(24, vw < 600 ? 30 : vw < 900 ? 40 : 56);
     const rows = Math.round(cols * 0.46);
     const gap = 0.62;
     const count = cols * rows;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: vw >= 900, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, vw < 900 ? 1 : 1.5));
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
     camera.position.set(0, 0, 26);
@@ -49,8 +49,13 @@ export default function HeroLedWall() {
     const color = new THREE.Color();
     const clock = new THREE.Clock();
     let frame = 0;
-    const animate = () => {
+    let visible = true;
+    let lastRender = 0;
+    const animate = (timestamp = 0) => {
+      if (!visible) { frame = 0; return; }
       frame = requestAnimationFrame(animate);
+      if (!still && timestamp - lastRender < 22) return;
+      lastRender = timestamp;
       const time = still ? 6.2 : clock.getElapsedTime();
       for (let item = 0; item < count; item += 1) {
         const x = base[item * 3], y = base[item * 3 + 1];
@@ -66,10 +71,16 @@ export default function HeroLedWall() {
       wall.rotation.y = pointer.x * .28 + (still ? 0 : Math.sin(time * .15) * .05);
       wall.rotation.x = -pointer.y * .18;
       renderer.render(scene, camera);
+      if (still) { cancelAnimationFrame(frame); frame = 0; }
     };
+    const visibility = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && frame === 0) animate();
+    }, { rootMargin: "120px" });
+    visibility.observe(canvas);
     animate();
     return () => {
-      cancelAnimationFrame(frame); window.removeEventListener("pointermove", onPointer); observer.disconnect();
+      cancelAnimationFrame(frame); window.removeEventListener("pointermove", onPointer); observer.disconnect(); visibility.disconnect();
       geometry.dispose(); material.dispose(); renderer.dispose();
     };
   }, []);

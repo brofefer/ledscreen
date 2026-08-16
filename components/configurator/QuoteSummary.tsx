@@ -2,7 +2,7 @@ import { CATALOG } from "../../data/catalog";
 import type { ScreenItem } from "../../data/screens";
 import { summaryRows, whatsappHref, type QuoteInput } from "../../data/quoteMessage";
 
-const WHATSAPP = "595981123456";
+const WHATSAPP = "595981416316";
 
 type Config = { screens: ScreenItem[]; counts: Record<string, number>; extras: string[] };
 

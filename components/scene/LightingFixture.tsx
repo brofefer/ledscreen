@@ -74,3 +74,65 @@ export function Strobe({ position, enabled, demo, index }: FixtureProps) {
     <pointLight ref={light} position={[0, -.5, 1]} color="#e7f5ff" intensity={0} distance={7} decay={2} />
   </group>;
 }
+
+export function MirrorBall({ position, enabled, demo, index }: FixtureProps) {
+  const ball = useRef<THREE.Group>(null);
+  const reflection = useRef<THREE.PointLight>(null);
+  useFrame(({ clock }, delta) => {
+    if (ball.current) ball.current.rotation.y += delta * (demo ? .42 : .12);
+    if (reflection.current) {
+      const pulse = .72 + Math.sin(clock.getElapsedTime() * .55 + index) * .18;
+      reflection.current.intensity = enabled ? (demo ? pulse : .42) : 0;
+    }
+  });
+
+  return <group position={position} name="Globo Espejado">
+    <mesh position={[0, .52, 0]} castShadow>
+      <cylinderGeometry args={[.012, .012, .72, 8]} />
+      <meshStandardMaterial color="#b8c1cc" metalness={.95} roughness={.12} />
+    </mesh>
+    <group ref={ball}>
+      <mesh castShadow>
+        <sphereGeometry args={[.34, 24, 16]} />
+        <meshStandardMaterial color={enabled ? "#d9f5ff" : "#7f8892"} metalness={1} roughness={.08} />
+      </mesh>
+      <mesh scale={1.012}>
+        <sphereGeometry args={[.34, 16, 12]} />
+        <meshBasicMaterial color="#26313d" wireframe transparent opacity={.5} depthWrite={false} />
+      </mesh>
+    </group>
+    <pointLight ref={reflection} color={index % 2 ? "#bf75ff" : "#6ee8ff"} intensity={enabled ? .42 : 0} distance={5} decay={2} />
+  </group>;
+}
+
+export function PinSpot({ position, enabled, demo, index }: FixtureProps) {
+  const pivot = useRef<THREE.Group>(null);
+  const beam = useRef<THREE.MeshBasicMaterial>(null);
+  useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
+    if (pivot.current) pivot.current.rotation.z = demo && enabled ? Math.sin(time * .28 + index * .9) * .26 : (index % 2 ? -.12 : .12);
+    if (beam.current) beam.current.opacity = enabled ? .085 : 0;
+  });
+
+  return <group position={position} name="Pin">
+    <mesh position={[0, .13, 0]} castShadow>
+      <boxGeometry args={[.18, .12, .16]} />
+      <meshStandardMaterial color="#151a20" metalness={.7} roughness={.28} />
+    </mesh>
+    <group ref={pivot} rotation={[0, 0, index % 2 ? -.12 : .12]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[.09, .12, .3, 16]} />
+        <meshStandardMaterial color="#242a32" metalness={.7} roughness={.25} />
+      </mesh>
+      <mesh position={[0, -.16, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[.075, 16]} />
+        <meshStandardMaterial color="#f5fbff" emissive="#d8f5ff" emissiveIntensity={enabled ? 2 : 0} />
+      </mesh>
+      <mesh position={[0, -2.1, 0]} rotation={[0, 0, Math.PI]}>
+        <coneGeometry args={[.26, 3.8, 16, 1, true]} />
+        <meshBasicMaterial ref={beam} color="#dff8ff" transparent opacity={enabled ? .085 : 0} depthWrite={false} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} />
+      </mesh>
+      {enabled && <spotLight position={[0, -.18, 0]} color="#e7f8ff" intensity={3.4} distance={7} angle={.09} penumbra={.5} decay={1.8} />}
+    </group>
+  </group>;
+}

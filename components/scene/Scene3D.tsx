@@ -26,13 +26,16 @@ type Props = {
 };
 
 export default function Scene3D({ screens, items, extras, onRemoveObject }: Props) {
+  const shell = useRef<HTMLDivElement>(null);
   const controls = useRef<CameraControllerHandle>(null);
+  const [inView, setInView] = useState(true);
   const [lightsEnabled, setLightsEnabled] = useState(true);
   const [demoMode, setDemoMode] = useState(false);
   const [environmentKey, setEnvironmentKey] = useState<EnvironmentKey>(DEFAULT_ENVIRONMENT);
   const [selected, setSelected] = useState<{ id: string; label: string; transform: SceneTransform } | null>(null);
   const [interactionMode, setInteractionMode] = useState<"camera" | "move">("camera");
   const sceneObjects = useSceneObjects();
+  const removeMissing = sceneObjects.removeMissing;
   const quality = useAdaptiveQuality();
   const environment = environmentOf(environmentKey);
 
@@ -42,7 +45,7 @@ export default function Scene3D({ screens, items, extras, onRemoveObject }: Prop
   const soundItems = items.filter((item) => catalogEntry(item.key)?.category === "sound");
   const lightingItems = items.filter((item) => catalogEntry(item.key)?.category === "lighting");
   const showTruss = screens.some((screen) => screen.kind === "LED Outdoor")
-    || lightingItems.some((item) => item.key === "sharpy" || item.key === "strobe");
+    || lightingItems.some((item) => item.key === "sharpy" || item.key === "strobe" || item.key === "mirror-ball" || item.key === "pinspot");
 
   const showBooth = extras.includes("Consola DJ") || extras.includes("DJ");
 
@@ -63,15 +66,23 @@ export default function Scene3D({ screens, items, extras, onRemoveObject }: Prop
   useEffect(() => {
     const ids = [...screens.map((screen) => screen.id), ...items.map((item) => item.id)];
     if (showBooth) ids.push("dj-area");
-    sceneObjects.removeMissing(ids);
-  }, [screens, items, showBooth, sceneObjects.removeMissing]);
+    removeMissing(ids);
+  }, [screens, items, showBooth, removeMissing]);
+
+  useEffect(() => {
+    const element = shell.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "180px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   const sceneLabel = screens.length === 1
     ? { title: screens[0].kind === "E-Poster" ? "E-Poster 1×2" : screens[0].kind, detail: screenSizeLabel(screens[0]) }
     : { title: `${screens.length} pantallas`, detail: `${String(Number(stageSpan.toFixed(1))).replace(".", ",")} m de ancho` };
 
-  return <div className="scene-shell">
-    <Canvas shadows={quality.shadows} dpr={quality.dpr} onPointerMissed={() => { if (interactionMode === "camera") setSelected(null); }} camera={{ position: [0, 1.68, 12.5], fov: 48, near: 0.1, far: 80 }} gl={{ antialias: !quality.lowPower, powerPreference: "high-performance" }}>
+  return <div className="scene-shell" ref={shell}>
+    <Canvas frameloop={inView ? "always" : "never"} shadows={quality.shadows} dpr={quality.dpr} performance={{ min: .55 }} onPointerMissed={() => { if (interactionMode === "camera") setSelected(null); }} camera={{ position: [0, 1.68, 12.5], fov: 48, near: 0.1, far: 80 }} gl={{ antialias: !quality.mobile && !quality.lowPower, powerPreference: "high-performance" }}>
       <color attach="background" args={[environment.background]} />
       <fog attach="fog" args={[environment.fog.color, environment.fog.near, environment.fog.far]} />
       <hemisphereLight intensity={environment.hemisphere.intensity} color={environment.hemisphere.sky} groundColor={environment.hemisphere.ground} />
@@ -85,7 +96,7 @@ export default function Scene3D({ screens, items, extras, onRemoveObject }: Prop
         <ReferencePerson screenWidth={stageSpan} />
         <EquipmentLayer items={soundItems} extras={extras} screenWidth={stageSpan} transforms={sceneObjects.transforms} selectedId={selectedId} moveMode={moveMode} onSelect={selectObject} onChange={changeObject} onToggleMove={toggleObjectMove} onReset={resetObject} onRemove={removeObject} />
         <LightingLayer items={lightingItems} screenWidth={stageSpan} screenHeight={tallest} enabled={lightsEnabled} demo={demoMode} transforms={sceneObjects.transforms} selectedId={selectedId} moveMode={moveMode} onSelect={selectObject} onChange={changeObject} onToggleMove={toggleObjectMove} onReset={resetObject} onRemove={removeObject} />
-        {!quality.lowPower && <ContactShadows position={[0, 0.01, 0]} opacity={environment.contactShadow} scale={22} blur={2.2} far={8} />}
+        {!quality.mobile && !quality.lowPower && <ContactShadows position={[0, 0.01, 0]} opacity={environment.contactShadow} scale={22} blur={2.2} far={8} frames={1} resolution={256} />}
       </Suspense>
       <CameraController ref={controls} enabled={!moveMode} screenWidth={stageSpan} />
     </Canvas>

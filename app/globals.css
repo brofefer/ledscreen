@@ -293,7 +293,7 @@ a:hover { color: oklch(0.86 0.12 230) }
   margin: 0 0 38px;
   text-wrap: pretty;
 }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 56px }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px }
 .hero-actions a {
   font-weight: 700;
   font-size: 16px;
@@ -314,6 +314,12 @@ a:hover { color: oklch(0.86 0.12 230) }
   transition: background .2s;
 }
 .hero-actions .secondary:hover { color: var(--text); background: rgba(255, 255, 255, .11) }
+.hero-copy > .hero-cta-note {
+  margin: 0 0 42px;
+  color: #7f8996;
+  font-size: 13px;
+  line-height: 1.4;
+}
 .stats { display: flex; gap: clamp(24px, 5vw, 60px) }
 .stats div { display: flex; flex-direction: column }
 .stats strong {
@@ -657,72 +663,35 @@ a:hover { color: oklch(0.86 0.12 230) }
 .gallery-card:hover > div { opacity: 1 }
 .gallery-card span { font-family: var(--display); font-weight: 600; font-size: 16px }
 
-/* ---------- CTA al cotizador ---------- */
-.quote-cta-wrap { padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 64px); max-width: 1280px; margin: 0 auto }
-.quote-cta {
-  position: relative;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid oklch(0.72 0.17 230 / .3);
-  background: linear-gradient(120deg, #0d0f15, #12141c);
-  padding: clamp(30px, 5vw, 54px);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-.quote-cta > i {
-  position: absolute;
-  right: -60px;
-  top: -70px;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: radial-gradient(circle, oklch(0.72 0.17 230 / .18), transparent 70%);
-  pointer-events: none;
-}
-.quote-cta > div { position: relative; max-width: 580px }
-.quote-cta h2 {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(24px, 3.2vw, 38px);
-  line-height: 1.08;
-  letter-spacing: -.01em;
-  margin: 0 0 10px;
-}
-.quote-cta p { font-size: 16px; color: var(--muted); line-height: 1.55; margin: 0 }
-.quote-cta a {
-  position: relative;
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--bg);
-  background: var(--accent);
-  border-radius: 999px;
-  padding: 16px 30px;
-  white-space: nowrap;
-  box-shadow: 0 0 30px oklch(0.72 0.17 230 / .4);
-}
-.quote-cta a:hover { color: var(--bg); background: var(--accent-hi) }
-
 /* ============================================================
    COTIZADOR 3D — bloque funcional, no tocar la estructura.
    Sólo se unificó el acento con el resto del sitio.
    ============================================================ */
-.configurator-section { padding: 100px clamp(16px, 4vw, 60px); background: #0a0c11 }
+.configurator-section { padding: 88px clamp(16px, 4vw, 60px) 100px; background: #0a0c11; scroll-margin-top: 86px }
+.configurator-intro { max-width: 1500px; margin: 0 auto 34px }
+.configurator-intro h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: -.02em;
+  margin: 14px 0 16px;
+}
+.configurator-intro p { max-width: 650px; margin: 0; color: var(--muted); font-size: clamp(16px, 2vw, 19px); line-height: 1.55 }
 .configurator-layout {
   max-width: 1500px;
   margin: auto;
   display: grid;
   grid-template-columns: minmax(330px, 430px) 1fr;
+  grid-template-areas: "panel scene";
   min-height: 720px;
   border: 1px solid var(--border);
   border-radius: 24px;
   overflow: hidden;
   background: #0e1118;
 }
-.config-panel { padding: 36px; overflow: auto; max-height: 800px }
+.config-panel { grid-area: panel; padding: 36px; overflow: auto; max-height: 800px }
+.config-scene { grid-area: scene; min-width: 0; min-height: 720px }
 .config-panel h2 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 4vw, 50px); line-height: 1; margin: 0 0 14px }
 .config-panel > p { color: var(--muted); line-height: 1.55 }
 .config-group { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border) }
@@ -740,6 +709,12 @@ a:hover { color: oklch(0.86 0.12 230) }
 }
 .chip:hover { border-color: oklch(0.72 0.17 230 / .47) }
 .chip.active { background: var(--accent); border-color: var(--accent); color: #071015; font-weight: 700 }
+.lighting-reference-note {
+  margin: 12px 0 0;
+  color: #77818e;
+  font-size: 11px;
+  line-height: 1.5;
+}
 .scene-shell { position: relative; width: 100%; height: 100%; min-height: 640px; background: #090c12 }
 .scene-shell canvas { touch-action: none }
 .viewer-badge, .viewer-help {
@@ -775,7 +750,6 @@ a:hover { color: oklch(0.86 0.12 230) }
   padding: 9px 14px;
   cursor: pointer;
 }
-.mobile-scene { display: none }
 /* Selector de ambiente: es presentación, no entra en el presupuesto. */
 .environment-controls {
   position: absolute;
@@ -1144,6 +1118,7 @@ a:hover { color: oklch(0.86 0.12 230) }
   border: 1px solid oklch(0.72 0.17 230 / .4);
   font-weight: 700;
 }
+.contact-data b svg { width: 20px; height: 20px }
 .contact-data span, .contact-data small, .contact-data strong { display: block }
 .contact-data small { font-size: 13px; color: var(--dim) }
 .contact-data strong { font-weight: 700 }
@@ -1202,7 +1177,7 @@ footer .brand span { font-size: 16px }
 
 /* ---------- Redes y WhatsApp (añadidos al prototipo) ---------- */
 .footer-socials, .mobile-socials { display: flex; gap: 10px }
-.footer-socials a, .mobile-socials a, .social-rail a {
+.footer-socials a, .footer-socials button, .mobile-socials a, .mobile-socials button, .social-rail a, .social-rail button {
   display: grid;
   place-items: center;
   width: 36px;
@@ -1213,13 +1188,36 @@ footer .brand span { font-size: 16px }
   background: rgba(255, 255, 255, .04);
   font-size: 13px;
   font-weight: 700;
+  padding: 0;
+  font-family: inherit;
   transition: color .2s, border-color .2s, background .2s;
 }
+.footer-socials svg, .mobile-socials svg, .social-rail svg { width: 17px; height: 17px }
 .footer-socials a:hover, .mobile-socials a:hover, .social-rail a:hover {
   color: var(--bg);
   background: var(--accent);
   border-color: var(--accent);
 }
+.social-upcoming { position: relative; cursor: not-allowed; opacity: .52 }
+.social-upcoming > span {
+  position: absolute;
+  right: calc(100% + 9px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: #cbd1da;
+  background: rgba(8, 9, 13, .94);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.social-upcoming:hover > span, .social-upcoming:focus-visible > span { opacity: 1 }
+.footer-socials .social-upcoming > span, .mobile-socials .social-upcoming > span { left: 50%; right: auto; top: auto; bottom: calc(100% + 9px); transform: translateX(-50%) }
 .mobile-socials { margin-top: 8px }
 .social-rail {
   position: fixed;
@@ -1247,14 +1245,24 @@ footer .brand span { font-size: 16px }
   box-shadow: 0 6px 24px rgba(0, 0, 0, .5);
 }
 .whatsapp-float:hover { color: #07140b; background: #2ee87a }
+.whatsapp-float svg { width: 25px; height: 25px }
 
-/* ---------- Reveal al hacer scroll ---------- */
+/* ---------- Reveal anticipado al hacer scroll ---------- */
 .reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity .8s cubic-bezier(.2, .7, .2, 1), transform .8s cubic-bezier(.2, .7, .2, 1);
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: opacity .78s cubic-bezier(.2, .7, .2, 1), transform .78s cubic-bezier(.2, .7, .2, 1), filter .78s ease;
 }
-.reveal.revealed { opacity: 1; transform: translateY(0) }
+.reveal-enabled .reveal:not(.revealed) {
+  opacity: 0;
+  transform: translateY(34px) scale(.985);
+  filter: blur(3px);
+}
+.reveal.revealed { opacity: 1; transform: translateY(0) scale(1); filter: none }
+.services-original-grid .reveal:nth-child(2), .event-grid .reveal:nth-child(2), .gallery-grid .reveal:nth-child(2) { transition-delay: .05s }
+.services-original-grid .reveal:nth-child(3), .event-grid .reveal:nth-child(3), .gallery-grid .reveal:nth-child(3) { transition-delay: .1s }
+.services-original-grid .reveal:nth-child(4), .gallery-grid .reveal:nth-child(4) { transition-delay: .15s }
 
 /* ============================================================
    Responsive.
@@ -1270,7 +1278,8 @@ footer .brand span { font-size: 16px }
 }
 
 @media (max-width: 900px) {
-  .configurator-section { padding: 70px 0 }
+  .configurator-section { padding: 64px 0 70px }
+  .configurator-intro { padding: 0 20px; margin-bottom: 26px }
   .configurator-layout {
     display: flex;
     flex-direction: column;
@@ -1279,8 +1288,7 @@ footer .brand span { font-size: 16px }
     border-right: 0;
     overflow: visible;
   }
-  .desktop-scene { display: none }
-  .mobile-scene {
+  .config-scene {
     display: block;
     height: 58vh;
     min-height: 420px;
@@ -1336,7 +1344,7 @@ footer .brand span { font-size: 16px }
 }
 
 @media (max-width: 560px) {
-  .mobile-scene { height: 55vh; min-height: 370px }
+  .config-scene { height: 55vh; min-height: 370px }
   .scene-shell { height: 55vh }
   .reset-view { top: 14px; right: 14px }
   .lighting-controls { right: 14px; top: 58px; flex-direction: column; align-items: flex-end }

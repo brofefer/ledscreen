@@ -1,6 +1,6 @@
 import type { SceneItem } from "../../data/sceneItems";
 import type { SceneTransform } from "../../hooks/useSceneObjects";
-import { ParLed, Sharpy, Strobe } from "./LightingFixture";
+import { MirrorBall, ParLed, PinSpot, Sharpy, Strobe } from "./LightingFixture";
 import SceneObject from "./SceneObject";
 
 type Props = {
@@ -40,11 +40,27 @@ export default function LightingLayer({ items, screenWidth, screenHeight, enable
       size: [.5, .45, .5] as [number, number, number],
       axis: "xz" as const, bounds: floorBounds,
     },
+    "mirror-ball": {
+      label: "Globo Espejado",
+      spots: [-spread * .55, 0, spread * .55],
+      y: trussY - .95, z: -.12,
+      size: [.72, 1.1, .72] as [number, number, number],
+      axis: "x" as const, bounds: trussBounds,
+    },
+    "pinspot": {
+      label: "Pin",
+      spots: [-spread, -spread / 3, spread / 3, spread],
+      y: trussY - .28, z: -.2,
+      size: [.35, .5, .35] as [number, number, number],
+      axis: "x" as const, bounds: trussBounds,
+    },
   };
 
   const fixture = (key: string, slot: number) => {
     if (key === "sharpy") return <Sharpy position={[0, 0, 0]} enabled={enabled} demo={demo} index={slot} />;
     if (key === "strobe") return <Strobe position={[0, 0, 0]} enabled={enabled} demo={demo} index={slot} />;
+    if (key === "mirror-ball") return <MirrorBall position={[0, 0, 0]} enabled={enabled} demo={demo} index={slot} />;
+    if (key === "pinspot") return <PinSpot position={[0, 0, 0]} enabled={enabled} demo={demo} index={slot} />;
     return <ParLed position={[0, 0, 0]} enabled={enabled} demo={demo} index={slot} />;
   };
 

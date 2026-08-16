@@ -30,6 +30,8 @@ export const CATALOG: CatalogEntry[] = [
   { key: "par-led", label: "PAR LED", category: "lighting", defaultUnits: 4, maxUnits: 4 },
   { key: "sharpy", label: "Sharpy", category: "lighting", defaultUnits: 4, maxUnits: 4 },
   { key: "strobe", label: "Strobe", category: "lighting", defaultUnits: 2, maxUnits: 2 },
+  { key: "mirror-ball", label: "Globos Espejados", category: "lighting", defaultUnits: 3, maxUnits: 3 },
+  { key: "pinspot", label: "Pines", category: "lighting", defaultUnits: 4, maxUnits: 4 },
 ];
 
 const BY_KEY = new Map(CATALOG.map((entry) => [entry.key, entry]));

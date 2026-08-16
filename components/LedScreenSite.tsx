@@ -1,11 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import BrandLogo from "./BrandLogo";
 import Configurator from "./configurator/Configurator";
 import HeroLedWall from "./HeroLedWall";
+import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
+import { MdEmail, MdPublic } from "react-icons/md";
+import { contactWhatsappHref } from "../data/contactMessage";
 
-const SOCIALS = [{ label: "Instagram", icon: "IG", href: "#" }, { label: "Facebook", icon: "f", href: "#" }, { label: "TikTok", icon: "♪", href: "#" }];
+const WHATSAPP_HREF = "https://wa.me/595981416316";
+const SOCIALS = [
+  { label: "Instagram", Icon: FaInstagram, href: "https://www.instagram.com/ledscreenpy/" },
+  { label: "Facebook", Icon: FaFacebookF, href: "https://www.facebook.com/leds.screen" },
+  { label: "TikTok", Icon: FaTiktok, href: null },
+];
+
+function SocialButtons() {
+  return <>{SOCIALS.map(({ label, Icon, href }) => href
+    ? <a aria-label={label} href={href} target="_blank" rel="noopener noreferrer" key={label}><Icon aria-hidden="true" /></a>
+    : <button type="button" className="social-upcoming" aria-label={`${label} próximamente`} title={`${label} · Próximamente`} key={label}><Icon aria-hidden="true" /><span>Próximamente</span></button>
+  )}</>;
+}
 const SERVICES = [
   ["01", "Pantallas LED", "Módulos indoor/outdoor de alta resolución, cualquier medida."],
   ["02", "Sonido profesional", "Line-array y refuerzo sonoro para cualquier sala."],
@@ -52,37 +67,57 @@ export default function LedScreenSite() {
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>(".reveal");
+    const root = document.documentElement;
+    root.classList.add("reveal-enabled");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      elements.forEach((element) => element.classList.add("revealed"));
+      return () => root.classList.remove("reveal-enabled");
+    }
     const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
       if (entry.isIntersecting) { entry.target.classList.add("revealed"); observer.unobserve(entry.target); }
-    }), { threshold: .12 });
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    }), { threshold: .08, rootMargin: "0px 0px -12% 0px" });
+    elements.forEach((element) => {
+      if (element.getBoundingClientRect().top <= window.innerHeight * .88) element.classList.add("revealed");
+      else observer.observe(element);
+    });
+    return () => { observer.disconnect(); root.classList.remove("reveal-enabled"); };
   }, []);
 
-  return <main>
-    <header className="site-header"><a className="brand" href="#inicio"><BrandLogo animated /><span>LedScreen</span></a><nav className="desktop-nav"><a href="#inicio">Inicio</a><a href="#servicios">Servicios</a><a href="#pantallas">Pantallas LED</a><a href="#eventos">Eventos</a><a href="#trabajos">Trabajos</a><a className="nav-accent" href="#cotizador">Cotizá</a><a href="#faq">FAQ</a><button className="lang-button" onClick={() => setLang(lang === "ES" ? "EN" : "ES")}>{lang === "ES" ? "EN" : "ES"}</button><a className="nav-cta" href="#contacto">Cotizar</a></nav><button className="menu-button" aria-label="Abrir menú" aria-expanded={menu} onClick={() => setMenu(!menu)}><i /><i /><i /></button></header>
-    <div className={menu ? "mobile-menu open" : "mobile-menu"} aria-hidden={!menu}><a onClick={() => setMenu(false)} href="#inicio">Inicio</a><a onClick={() => setMenu(false)} href="#servicios">Servicios</a><a onClick={() => setMenu(false)} href="#pantallas">Pantallas LED</a><a onClick={() => setMenu(false)} href="#eventos">Eventos</a><a onClick={() => setMenu(false)} href="#trabajos">Trabajos</a><a className="nav-accent" onClick={() => setMenu(false)} href="#cotizador">Cotizá</a><a onClick={() => setMenu(false)} href="#faq">FAQ</a><a className="nav-cta" onClick={() => setMenu(false)} href="#contacto">Cotizar</a><div className="mobile-socials">{SOCIALS.map((item) => <a aria-label={item.label} href={item.href} key={item.label}>{item.icon}</a>)}</div></div>
+  const sendContactToWhatsapp = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const href = contactWhatsappHref("595981416316", {
+      name: String(form.get("name") ?? ""),
+      eventType: String(form.get("eventType") ?? ""),
+      date: String(form.get("date") ?? ""),
+      message: String(form.get("message") ?? ""),
+    });
+    window.open(href, "_blank", "noopener,noreferrer");
+  };
 
-    <section id="inicio" className="hero"><HeroLedWall /><div className="hero-vignette" /><div className="hero-side-shade" /><div className="hero-copy"><div className="hero-badge"><span />PIONEROS EN PANTALLAS LED · DESDE 2010</div><h1><span>Convertimos</span><em>cada evento en luz</em></h1><p>Pantallas LED, sonido, iluminación y estructuras técnicas para eventos sociales, empresariales y gubernamentales en todo Paraguay.</p><div className="hero-actions"><a className="primary" href="#cotizador">Pedir presupuesto</a><a className="secondary" href="#trabajos">Ver trabajos</a></div><div className="stats"><div><strong>15+</strong><span>AÑOS DE EXPERIENCIA</span></div><div><strong>100+</strong><span>M² DE PANTALLA</span></div><div><strong>500+</strong><span>EVENTOS MONTADOS</span></div></div></div></section>
+  return <main>
+    <header className="site-header"><a className="brand" href="#inicio"><BrandLogo animated /><span>LedScreen</span></a><nav className="desktop-nav"><a href="#inicio">Inicio</a><a href="#servicios">Servicios</a><a href="#pantallas">Pantallas LED</a><a href="#eventos">Eventos</a><a href="#trabajos">Trabajos</a><a href="#faq">FAQ</a><button className="lang-button" onClick={() => setLang(lang === "ES" ? "EN" : "ES")}>{lang === "ES" ? "EN" : "ES"}</button><a className="nav-cta" href="#cotizador">Cotizador</a></nav><button className="menu-button" aria-label="Abrir menú" aria-expanded={menu} onClick={() => setMenu(!menu)}><i /><i /><i /></button></header>
+    <div className={menu ? "mobile-menu open" : "mobile-menu"} aria-hidden={!menu}><a onClick={() => setMenu(false)} href="#inicio">Inicio</a><a onClick={() => setMenu(false)} href="#servicios">Servicios</a><a onClick={() => setMenu(false)} href="#pantallas">Pantallas LED</a><a onClick={() => setMenu(false)} href="#eventos">Eventos</a><a onClick={() => setMenu(false)} href="#trabajos">Trabajos</a><a onClick={() => setMenu(false)} href="#faq">FAQ</a><a className="nav-cta" onClick={() => setMenu(false)} href="#cotizador">Cotizador</a><div className="mobile-socials"><SocialButtons /></div></div>
+
+    <section id="inicio" className="hero"><HeroLedWall /><div className="hero-vignette" /><div className="hero-side-shade" /><div className="hero-copy"><div className="hero-badge"><span />PIONEROS EN PANTALLAS LED · DESDE 2010</div><h1><span>Convertimos</span><em>cada evento en luz</em></h1><p>Pantallas LED, sonido, iluminación y estructuras técnicas para eventos sociales, empresariales y gubernamentales en todo Paraguay.</p><div className="hero-actions"><a className="primary" href="#cotizador">Configurá tu evento en 3D</a><a className="secondary" href="#trabajos">Ver trabajos</a></div><p className="hero-cta-note">Visualizá el montaje a escala y envialo por WhatsApp.</p><div className="stats"><div><strong>15+</strong><span>AÑOS DE EXPERIENCIA</span></div><div><strong>100+</strong><span>M² DE PANTALLA</span></div><div><strong>500+</strong><span>EVENTOS MONTADOS</span></div></div></div></section>
     <div className="marquee"><div>{[0, 1].map((copy) => <span className="marquee-set" key={copy}><b>PANTALLAS LED</b><i>◆</i><b>SONIDO</b><i>◆</i><b>ILUMINACIÓN</b><i>◆</i><b>TRUSS</b><i>◆</i><b>TARIMAS</b><i>◆</i><b>DJ</b><i>◆</i><b>E-PÓSTER</b><i>◆</i><b>STREAMING</b><i>◆</i></span>)}</div></div>
 
     <section id="servicios" className="original-section services-original"><div className="section-intro reveal"><div className="eyebrow">01 — SERVICIOS</div><h2>Soluciones integrales para eventos</h2><p>Todo lo técnico bajo un mismo equipo: desde la pantalla hasta el último cable. Transporte, montaje y operación en vivo incluidos.</p></div><div className="services-original-grid">{SERVICES.map(([num, title, text]) => <article className="service-original-card reveal" key={num}><span>{num}</span><h3>{title}</h3><p>{text}</p><i /></article>)}</div></section>
 
     <section id="pantallas" className="screens-original"><div className="screens-original-inner"><div className="screen-copy reveal"><div className="eyebrow">02 — PANTALLAS LED</div><h2>Desde 6 m² hasta más de 100 m²</h2><p>Módulos de alta resolución para interior y exterior. Elegimos la medida y el pixel-pitch ideal según tu evento, tu sala y tu presupuesto.</p><div className="preview-size-buttons">{PREVIEW_SIZES.map(([w, h], index) => <button className={preview === index ? "active" : ""} key={`${w}-${h}`} onClick={() => { setPreview(index); setPreviewAuto(false); }}>{w} × {String(h).replace(".", ",")} m</button>)}</div><div className="screen-hint">↗ Tocá una medida para verla a escala junto a una persona de 1,70 m.</div><div className="screen-features"><div><strong>Indoor &amp; Outdoor</strong><span>Estructuras seguras para intemperie.</span></div><div><strong>Cualquier contenido</strong><span>Video, imágenes, presentaciones y streaming en vivo.</span></div></div></div><div className="screen-preview reveal"><div className="preview-grid" /><div className="preview-floor" /><div className="preview-label"><strong>{screenW} × {String(screenH).replace(".", ",")} m</strong><i /><span>{screenW * screenH} m²</span></div><div className="scale-stage"><div className="scale-person" style={{ height: `${1.7 * 100 / 4.6}%` }}><small>1,70 m</small><svg viewBox="0 0 24 80" preserveAspectRatio="xMidYMax meet"><circle cx="12" cy="8.5" r="6.6" /><path d="M12 16.5C6.5 16.5 5 21 5 29L4 47c-.2 2.4 2.3 2.6 2.7.2L8.2 33 8 78c0 2 3 2 3.1 0l.9-23 .9 23c.1 2 3.1 2 3.1 0l-.2-45 1.5 14.2c.4 2.4 2.9 2.2 2.7-.2l-1-18c0-8-1.5-12.5-7-12.5Z" /></svg></div><div className="scale-panel" style={{ width: `${screenW * 100 / 7.8}%`, height: `${screenH * 100 / 4.6}%` }}><div className="scale-panel-wave" /><div className="scale-panel-pixels" /><BrandLogo /></div></div></div></div></section>
 
+    <Configurator />
+
     <section id="eventos" className="original-section"><div className="section-intro reveal"><div className="eyebrow">03 — EVENTOS</div><h2>Para cada tipo de evento</h2><p>Experiencia comprobada en producciones sociales, corporativas y oficiales.</p></div><div className="event-grid">{EVENTS.map(([image, title, tags]) => <article className="event-card reveal" key={title}><img src={image} alt={title} /><div className="event-shade" /><div className="event-info"><h3>{title}</h3><div>{tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></article>)}</div></section>
 
     <section id="trabajos" className="works-original"><div className="works-inner"><div className="section-intro reveal"><div className="eyebrow">04 — TRABAJOS</div><h2>Producciones reales</h2><p>Una muestra de montajes recientes en Asunción y el interior del país.</p></div><div className="gallery-grid">{GALLERY.map(([image, title, tall]) => <article className={`gallery-card reveal ${tall ? "tall" : ""}`} key={title}><img src={image} alt={title} /><div><span>{title}</span></div></article>)}</div></div></section>
 
-    <section className="quote-cta-wrap"><div className="quote-cta reveal"><i /><div><h2>Armá tu evento y cotizá al instante</h2><p>Elegí pantalla, sonido, luces y servicios, visualizá la maqueta a escala y enviá tu paquete por WhatsApp.</p></div><a href="#cotizador">Abrir cotizador →</a></div></section>
-
-    <Configurator />
-
     <section id="faq" className="faq-original"><div className="section-intro centered reveal"><div className="eyebrow">05 — PREGUNTAS FRECUENTES</div><h2>Todo lo que querés saber</h2></div><div className="faq-list">{FAQS.map(([question, answer], index) => <article className="reveal" key={question}><button aria-expanded={faq === index} onClick={() => setFaq(faq === index ? -1 : index)}><span>{question}</span><i className={faq === index ? "open" : ""}>+</i></button><div className={faq === index ? "faq-answer open" : "faq-answer"}><p>{answer}</p></div></article>)}</div></section>
 
-    <section id="contacto" className="contact-original"><i /><div className="contact-inner"><div className="reveal"><div className="eyebrow">06 — CONTACTO</div><h2>Pedí tu presupuesto</h2><p>Contanos lugar, fecha, tipo de evento y necesidades técnicas. Reservá con al menos 1 mes de anticipación.</p><div className="contact-data"><a href="https://wa.me/595981123456"><b>W</b><span><small>WhatsApp / Tel</small><strong>+595 981 123 456</strong></span></a><a href="mailto:hola@ledscreen.com.py"><b>@</b><span><small>Email</small><strong>hola@ledscreen.com.py</strong></span></a><div><b>◎</b><span><small>Cobertura</small><strong>Asunción · todo el país</strong></span></div></div></div><form className="contact-form reveal" onSubmit={(event) => event.preventDefault()}><label><span>Nombre</span><input required placeholder="Nombre" /></label><label><span>Tipo de evento</span><input placeholder="Tipo de evento" /></label><label><span>Fecha</span><input type="date" /></label><label><span>Mensaje</span><textarea rows={4} placeholder="Contanos qué necesitás (lugar, medidas, servicios)" /></label><button type="submit">Enviar solicitud</button></form></div></section>
+    <section id="contacto" className="contact-original"><i /><div className="contact-inner"><div className="reveal"><div className="eyebrow">06 — CONTACTO</div><h2>Pedí tu presupuesto</h2><p>Contanos lugar, fecha, tipo de evento y necesidades técnicas. Reservá con al menos 1 mes de anticipación.</p><div className="contact-data"><a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer"><b><FaWhatsapp aria-hidden="true" /></b><span><small>WhatsApp / Tel</small><strong>+595 981 416316</strong></span></a><a href="mailto:ledscreen@gmail.com"><b><MdEmail aria-hidden="true" /></b><span><small>Email</small><strong>ledscreen@gmail.com</strong></span></a><div><b><MdPublic aria-hidden="true" /></b><span><small>Cobertura</small><strong>Todo el país</strong></span></div></div></div><form className="contact-form reveal" onSubmit={sendContactToWhatsapp}><label><span>Nombre</span><input name="name" required placeholder="Nombre" /></label><label><span>Tipo de evento</span><input name="eventType" placeholder="Tipo de evento" /></label><label><span>Fecha</span><input name="date" type="date" /></label><label><span>Mensaje</span><textarea name="message" rows={4} placeholder="Contanos qué necesitás (lugar, medidas, servicios)" /></label><button type="submit">Enviar solicitud</button></form></div></section>
 
-    <footer><a className="brand" href="#inicio"><span>LedScreen</span></a><div className="footer-tagline">Pantallas LED y soluciones técnicas para eventos · desde 2010</div><div className="footer-socials">{SOCIALS.map((item) => <a aria-label={item.label} href={item.href} key={item.label}>{item.icon}</a>)}</div><div className="footer-copy">© {new Date().getFullYear()} LedScreen</div></footer>
-    <div className="social-rail">{SOCIALS.map((item) => <a aria-label={item.label} href={item.href} key={item.label}>{item.icon}</a>)}</div><a className="whatsapp-float" aria-label="Contactar por WhatsApp" href="https://wa.me/595981123456">W</a>
+    <footer><a className="brand" href="#inicio"><span>LedScreen</span></a><div className="footer-tagline">Pantallas LED y soluciones técnicas para eventos · desde 2010</div><div className="footer-socials"><SocialButtons /></div><div className="footer-copy">© {new Date().getFullYear()} LedScreen</div></footer>
+    <div className="social-rail"><SocialButtons /></div><a className="whatsapp-float" aria-label="Contactar por WhatsApp" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer"><FaWhatsapp aria-hidden="true" /></a>
   </main>;
 }

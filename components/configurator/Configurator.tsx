@@ -10,12 +10,15 @@ const Scene3D = lazy(() => import("../scene/Scene3D"));
 
 export default function Configurator() {
   const { config, actions } = useConfigurator();
-  const scene = <Suspense fallback={<SceneLoader />}><Scene3D screens={config.screens} items={config.items} extras={config.extras} onRemoveObject={actions.removeSceneInstance} /></Suspense>;
   return <section id="cotizador" className="configurator-section">
+    <div className="configurator-intro">
+      <div className="eyebrow">CONFIGURADOR 3D</div>
+      <h2>Armá tu escenario</h2>
+      <p>Elegí pantallas, sonido e iluminación y visualizá cómo podría verse tu montaje a escala.</p>
+    </div>
     <div className="configurator-layout">
-      <div className="mobile-scene">{scene}</div>
+      <div className="config-scene"><Suspense fallback={<SceneLoader />}><Scene3D screens={config.screens} items={config.items} extras={config.extras} onRemoveObject={actions.removeSceneInstance} /></Suspense></div>
       <ConfiguratorPanel config={config} actions={actions} />
-      <div className="desktop-scene">{scene}</div>
     </div>
     <QuoteSummary config={config} />
   </section>;

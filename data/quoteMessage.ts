@@ -51,7 +51,7 @@ export function summaryRows({ screens, counts, extras, catalog }: QuoteInput): S
   const rows: SummaryRow[] = groupedScreens(screens).map((label) => ({ category: "Pantalla" as const, label }));
   const units = (category: "sound" | "lighting") => catalog
     .filter((entry) => entry.category === category && (counts[entry.key] ?? 0) > 0)
-    .map((entry) => `${entry.label} × ${counts[entry.key]}`);
+    .map((entry) => category === "lighting" ? entry.label : `${entry.label} × ${counts[entry.key]}`);
   for (const label of units("sound")) rows.push({ category: "Sonido", label });
   for (const label of units("lighting")) rows.push({ category: "Iluminación", label });
   for (const label of extras) rows.push({ category: "Servicios", label });

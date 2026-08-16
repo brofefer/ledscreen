@@ -85,9 +85,6 @@ export default function ConfiguratorPanel({ config, actions }: Props) {
   const lighting = catalogOf("lighting");
   const full = config.screens.length >= MAX_SCREENS;
   return <div className="config-panel">
-    <div className="eyebrow">CONFIGURACIÓN</div>
-    <h2>Armá tu escenario</h2>
-    <p>Elegí pantallas, sonido e iluminación y visualizá cómo podría verse tu montaje.</p>
     <div className="mobile-category-tabs" role="tablist">{[["screen", "Pantallas"], ["sound", "Sonido"], ["lighting", "Luces"], ["extras", "Extras"]].map(([key, label]) => <button role="tab" aria-selected={category === key} className={category === key ? "active" : ""} key={key} onClick={() => setCategory(key as typeof category)}>{label}</button>)}</div>
 
     <div className={`config-group mobile-pane ${category === "screen" ? "mobile-active" : ""}`}>
@@ -112,7 +109,7 @@ export default function ConfiguratorPanel({ config, actions }: Props) {
     <div className={`config-group mobile-pane ${category === "lighting" ? "mobile-active" : ""}`}><h3>Iluminación</h3><div className="chips">{lighting.map((entry) => {
       const on = (config.counts[entry.key] ?? 0) > 0;
       return <button key={entry.key} className={on ? "chip active" : "chip"} aria-pressed={on} onClick={() => actions.toggleGroup(entry.key)}>{entry.label}</button>;
-    })}</div></div>
+    })}</div><p className="lighting-reference-note">La cantidad de equipos se determinará al preparar el presupuesto. La cantidad visualizada en el escenario es solo de referencia.</p></div>
 
     <div className={`config-group mobile-pane ${category === "extras" ? "mobile-active" : ""}`}><h3>DJ y extras</h3><div className="chips">{EXTRAS.map((item) => <button key={item} className={config.extras.includes(item) ? "chip active" : "chip"} aria-pressed={config.extras.includes(item)} onClick={() => actions.toggleExtra(item)}>{item}</button>)}</div></div>
   </div>;

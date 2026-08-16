@@ -17,6 +17,8 @@ const catalog = [
   { key: "par-led", label: "PAR LED", category: "lighting" },
   { key: "sharpy", label: "Sharpy", category: "lighting" },
   { key: "strobe", label: "Strobe", category: "lighting" },
+  { key: "mirror-ball", label: "Globos Espejados", category: "lighting" },
+  { key: "pinspot", label: "Pines", category: "lighting" },
 ];
 
 const outdoor = { kind: "LED Outdoor", width: 6, height: 4 };
@@ -50,18 +52,23 @@ test("agrupar distingue medidas distintas del mismo tipo", () => {
   assert.deepEqual(groupedScreens(screens), ["LED Outdoor — 6 × 4 m × 2", "LED Outdoor — 3 × 2 m"]);
 });
 
-test("cada equipo lleva su cantidad real", () => {
+test("el sonido conserva cantidad y la iluminación queda sujeta al presupuesto", () => {
   const lines = quoteLines(input({ counts: { "jbl-vrx": 2, "par-led": 3, "strobe": 2 } }));
   assert.deepEqual(lines, [
     "Pantalla: LED Outdoor — 6 × 4 m",
     "Sonido: JBL VRX × 2",
-    "Iluminación: PAR LED × 3, Strobe × 2",
+    "Iluminación: PAR LED, Strobe",
   ]);
 });
 
-test("una luminaria borrada baja la cantidad, no desaparece el renglón", () => {
+test("la cantidad visual de una luminaria no se envía como cantidad comercial", () => {
   const lines = quoteLines(input({ counts: { "par-led": 3 } }));
-  assert.equal(lines[1], "Iluminación: PAR LED × 3");
+  assert.equal(lines[1], "Iluminación: PAR LED");
+});
+
+test("los nuevos efectos de iluminación llegan al presupuesto", () => {
+  const lines = quoteLines(input({ counts: { "mirror-ball": 3, pinspot: 4 } }));
+  assert.equal(lines[1], "Iluminación: Globos Espejados, Pines");
 });
 
 test("las categorías sin nada elegido no aparecen", () => {

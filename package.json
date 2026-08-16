@@ -10,7 +10,7 @@
     "build": "vinext build",
     "start": "vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
-    "test:unit": "node --test --experimental-strip-types tests/scene-items.test.mjs tests/quote-message.test.mjs tests/screens.test.mjs",
+    "test:unit": "node --test --experimental-strip-types tests/contact-message.test.mjs tests/scene-items.test.mjs tests/quote-message.test.mjs tests/screens.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
@@ -22,7 +22,7 @@
     "drizzle-orm": "0.45.2",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "react-loading-skeleton": "3.5.0",
+    "react-icons": "^5.5.0",
     "three": "^0.185.1"
   },
   "devDependencies": {

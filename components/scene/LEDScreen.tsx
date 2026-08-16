@@ -17,7 +17,10 @@ export default function LEDScreen({ kind, width, height }: { kind: ScreenKind; w
   const wave = useMemo(() => waveTexture(width, height), [width, height]);
   const pixels = useMemo(() => pixelTexture(width, height), [width, height]);
   const logo = useMemo(() => logoTexture(), []);
+  const waveRef = useRef(wave);
   const logoMaterial = useRef<THREE.MeshBasicMaterial>(null);
+
+  useEffect(() => { waveRef.current = wave; }, [wave]);
 
   // Las texturas son recursos de GPU: hay que soltarlas al cambiar de medida
   // o al quitar la pantalla de la escena.
@@ -34,7 +37,7 @@ export default function LEDScreen({ kind, width, height }: { kind: ScreenKind; w
     // El degradado sube un mosaico completo por período, igual que `vx-scan`.
     // Se deriva del reloj y no se acumula, para que todas las pantallas vayan
     // sincronizadas aunque se agreguen en distinto momento.
-    if (!still) wave.offset.y = -((time / SCAN_PERIOD) % 1);
+    if (!still) waveRef.current.offset.y = -((time / SCAN_PERIOD) % 1);
     // Latido suave del isotipo, equivalente al `vx-logo-glow` del prototipo.
     if (logoMaterial.current) {
       logoMaterial.current.opacity = still ? 1 : 0.9 + 0.1 * Math.sin((time * Math.PI * 2) / 4);

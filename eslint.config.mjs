@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "out/**",
     "build/**",
+    "node_modules.incomplete/**",
     "next-env.d.ts",
   ]),
   eslint.configs.recommended,
@@ -34,6 +35,13 @@ const eslintConfig = defineConfig([
       react: {
         version: "detect",
       },
+    },
+  },
+  {
+    files: ["components/scene/**/*.{ts,tsx}"],
+    rules: {
+      // React Three Fiber extiende JSX con propiedades propias de Three.js.
+      "react/no-unknown-property": "off",
     },
   },
 ]);
