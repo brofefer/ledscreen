@@ -22,10 +22,10 @@ export default function Configurator() {
   }, [workspaceOpen]);
 
   return <section id="cotizador" className={workspaceOpen ? "configurator-section workspace-active" : "configurator-section"}>
-    <button className="workspace-open" type="button" onClick={() => setWorkspaceOpen(true)}><FaExpand aria-hidden="true" /> {tx("Abrir configurador")}</button>
-    {workspaceOpen && <button className="workspace-close" type="button" aria-label={tx("Cerrar configurador")} onClick={() => setWorkspaceOpen(false)}><FaXmark aria-hidden="true" /></button>}
+    <button className="workspace-open" type="button" onClick={() => setWorkspaceOpen(true)}><FaExpand aria-hidden="true" /> {tx("Abrir Cotizador 3D")}</button>
+    {workspaceOpen && <button className="workspace-close" type="button" aria-label={tx("Cerrar Cotizador 3D")} onClick={() => setWorkspaceOpen(false)}><FaXmark aria-hidden="true" /></button>}
     <div className="configurator-intro">
-      <div className="eyebrow">{tx("CONFIGURADOR 3D")}</div>
+      <div className="eyebrow">{tx("COTIZADOR 3D")}</div>
       <h2>{tx("Armá tu escenario")}</h2>
       <p>{tx("Elegí pantallas, sonido e iluminación y visualizá cómo podría verse tu montaje a escala.")}</p>
     </div>

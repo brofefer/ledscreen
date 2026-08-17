@@ -19,7 +19,7 @@ test("renderiza la página real de LedScreen", async () => {
   assert.match(html, /<title>LedScreen · Pantallas LED y soluciones técnicas para eventos<\/title>/);
   assert.match(html, /Convertimos/);
   assert.match(html, /Armá tu escenario/);
-  assert.match(html, /Configurá tu evento en 3D/);
+  assert.match(html, /Cotizá tu evento en 3D/);
   assert.match(html, /Visualizá el montaje a escala y envialo por WhatsApp/);
   assert.match(html, /Cotizar por WhatsApp/);
   assert.match(html, /Globos Espejados/);
@@ -31,7 +31,7 @@ test("renderiza la página real de LedScreen", async () => {
   assert.match(html, /https:\/\/www\.instagram\.com\/ledscreenpy\//);
   assert.match(html, /https:\/\/www\.facebook\.com\/leds\.screen/);
   assert.match(html, /TikTok próximamente/);
-  assert.match(html, />Cotizador<\/a>/);
+  assert.match(html, />Cotizador 3D<\/a>/);
   assert.doesNotMatch(html, />Cotizá<\/a>|>Cotizar<\/a>/);
   assert.match(html, /name="name"/);
   assert.match(html, /name="eventType"/);
