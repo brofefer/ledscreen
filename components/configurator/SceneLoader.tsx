@@ -1,3 +1,6 @@
+import { useTranslate } from "../LanguageContext";
+
 export default function SceneLoader() {
-  return <div className="scene-loader" role="status"><span /><strong>Preparando escenario 3D</strong><small>Cargando la experiencia interactiva…</small></div>;
+  const tx = useTranslate();
+  return <div className="scene-loader" role="status"><span /><strong>{tx("Preparando escenario 3D")}</strong><small>{tx("Cargando la experiencia interactiva…")}</small></div>;
 }

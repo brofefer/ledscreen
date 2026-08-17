@@ -5,9 +5,11 @@ import {
   type ScreenItem, type ScreenKind, type ScreenSize,
 } from "../../data/screens";
 import { useState } from "react";
+import { EVENT_PROFILES, type EventProfileKey } from "../../data/eventProfiles";
+import { useTranslate } from "../LanguageContext";
 
 type Props = {
-  config: { screens: ScreenItem[]; counts: Record<string, number>; extras: string[] };
+  config: { screens: ScreenItem[]; counts: Record<string, number>; extras: string[]; eventProfile: EventProfileKey };
   actions: {
     addScreen: (kind: ScreenKind) => void;
     removeScreen: (id: string) => void;
@@ -18,6 +20,7 @@ type Props = {
     changeUnits: (key: string, delta: number) => void;
     toggleGroup: (key: string) => void;
     toggleExtra: (value: string) => void;
+    setEventProfile: (profile: EventProfileKey) => void;
   };
 };
 
@@ -31,32 +34,34 @@ const TYPES: Array<{ value: ScreenKind; label: string; description: string }> = 
 const EXTRAS = ["Consola DJ", "DJ", "Escenario", "Generador", "Micrófonos"];
 
 function SizeStepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (delta: number) => void }) {
+  const tx = useTranslate();
   return <div className="size-stepper">
-    <span>{label}</span>
+    <span>{tx(label)}</span>
     <div>
-      <button aria-label={`Reducir ${label.toLowerCase()}`} disabled={value <= min} onClick={() => onChange(-1)}>−</button>
+      <button aria-label={`${tx("Quitar")} ${tx(label).toLowerCase()}`} disabled={value <= min} onClick={() => onChange(-1)}>−</button>
       <strong>{formatMeters(value)} m</strong>
-      <button aria-label={`Aumentar ${label.toLowerCase()}`} disabled={value >= max} onClick={() => onChange(1)}>+</button>
+      <button aria-label={`${tx("Agregar")} ${tx(label).toLowerCase()}`} disabled={value >= max} onClick={() => onChange(1)}>+</button>
     </div>
   </div>;
 }
 
 function ScreenCard({ screen, index, canRemove, actions }: { screen: ScreenItem; index: number; canRemove: boolean; actions: Props["actions"] }) {
+  const tx = useTranslate();
   const type = TYPES.find((option) => option.value === screen.kind);
   return <div className="screen-card">
     <div className="screen-card-head">
-      <strong>Pantalla {index + 1}</strong>
-      {canRemove && <button className="screen-card-remove" onClick={() => actions.removeScreen(screen.id)}>Eliminar</button>}
+      <strong>{tx("Pantalla")} {index + 1}</strong>
+      {canRemove && <button className="screen-card-remove" onClick={() => actions.removeScreen(screen.id)}>{tx("Eliminar")}</button>}
     </div>
     <div className="chips">{TYPES.map((option) => (
-      <button key={option.value} className={screen.kind === option.value ? "chip active" : "chip"} aria-pressed={screen.kind === option.value} title={option.description} onClick={() => actions.setScreenKind(screen.id, option.value)}>{option.label}</button>
+      <button key={option.value} className={screen.kind === option.value ? "chip active" : "chip"} aria-pressed={screen.kind === option.value} title={tx(option.description)} onClick={() => actions.setScreenKind(screen.id, option.value)}>{option.label}</button>
     ))}</div>
-    <p className="screen-card-hint">{type?.description}</p>
+    <p className="screen-card-hint">{type ? tx(type.description) : ""}</p>
     {screen.kind === "E-Poster"
-      ? <p className="screen-card-fixed">Medida fija de 1 × 2 m.</p>
+      ? <p className="screen-card-fixed">{tx("Medida fija de 1 × 2 m.")}</p>
       : <div className="screen-size">
         <label>
-          <span>Medida</span>
+          <span>{tx("Medida")}</span>
           <select
             value={screen.custom ? CUSTOM : sizeKey(screen)}
             onChange={(event) => {
@@ -67,8 +72,8 @@ function ScreenCard({ screen, index, canRemove, actions }: { screen: ScreenItem;
           >
             {SCREEN_PRESETS.map((preset) => <option key={sizeKey(preset)} value={sizeKey(preset)}>{screenSizeLabel(preset)}</option>)}
             {/* Una medida a medida no está en la lista: se muestra igual para no perderla. */}
-            {screen.custom && <option value={CUSTOM}>Personalizada — {screenSizeLabel(screen)}</option>}
-            {!screen.custom && <option value={CUSTOM}>Personalizada…</option>}
+            {screen.custom && <option value={CUSTOM}>{tx("Personalizada")} — {screenSizeLabel(screen)}</option>}
+            {!screen.custom && <option value={CUSTOM}>{tx("Personalizada")}…</option>}
           </select>
         </label>
         {screen.custom && <div className="size-steppers">
@@ -80,37 +85,43 @@ function ScreenCard({ screen, index, canRemove, actions }: { screen: ScreenItem;
 }
 
 export default function ConfiguratorPanel({ config, actions }: Props) {
+  const tx = useTranslate();
   const [category, setCategory] = useState<"screen" | "sound" | "lighting" | "extras">("screen");
   const sound = catalogOf("sound");
   const lighting = catalogOf("lighting");
   const full = config.screens.length >= MAX_SCREENS;
   return <div className="config-panel">
-    <div className="mobile-category-tabs" role="tablist">{[["screen", "Pantallas"], ["sound", "Sonido"], ["lighting", "Luces"], ["extras", "Extras"]].map(([key, label]) => <button role="tab" aria-selected={category === key} className={category === key ? "active" : ""} key={key} onClick={() => setCategory(key as typeof category)}>{label}</button>)}</div>
+    <div className="event-profile-picker">
+      <span>{tx("¿Qué tipo de evento estás preparando?")}</span>
+      <div>{EVENT_PROFILES.map((profile) => <button key={profile.key} className={config.eventProfile === profile.key ? "active" : ""} aria-pressed={config.eventProfile === profile.key} title={tx(profile.description)} onClick={() => actions.setEventProfile(profile.key)}>{tx(profile.label)}</button>)}</div>
+      <small>{tx(EVENT_PROFILES.find((profile) => profile.key === config.eventProfile)?.description ?? "")} {tx("Se incluirá en tu solicitud de presupuesto.")}</small>
+    </div>
+    <div className="mobile-category-tabs" role="tablist">{[["screen", "Pantallas"], ["sound", "Sonido"], ["lighting", "Luces"], ["extras", "Extras"]].map(([key, label]) => <button role="tab" aria-selected={category === key} className={category === key ? "active" : ""} key={key} onClick={() => setCategory(key as typeof category)}>{tx(label)}</button>)}</div>
 
     <div className={`config-group mobile-pane ${category === "screen" ? "mobile-active" : ""}`}>
-      <h3>Pantallas <small>{config.screens.length} de {MAX_SCREENS}</small></h3>
+      <h3>{tx("Pantallas")} <small>{config.screens.length} / {MAX_SCREENS}</small></h3>
       <div className="screen-list">
         {config.screens.map((screen, index) => <ScreenCard key={screen.id} screen={screen} index={index} canRemove={config.screens.length > 1} actions={actions} />)}
       </div>
       <div className="add-screen">
-        <span>Agregar</span>
+        <span>{tx("Agregar")}</span>
         <div className="chips">{TYPES.map((option) => (
           <button key={option.value} className="chip" disabled={full} onClick={() => actions.addScreen(option.value)}>+ {option.label}</button>
         ))}</div>
-        {full && <small>Llegaste al máximo de {MAX_SCREENS} pantallas.</small>}
+        {full && <small>{MAX_SCREENS} {tx("Pantallas")}</small>}
       </div>
     </div>
 
-    <div className={`config-group mobile-pane ${category === "sound" ? "mobile-active" : ""}`}><h3>Sonido <small>Cantidad por unidad</small></h3><div className="quantity-list">{sound.map((entry) => {
+    <div className={`config-group mobile-pane ${category === "sound" ? "mobile-active" : ""}`}><h3>{tx("Sonido")} <small>{tx("Cantidad por unidad")}</small></h3><div className="quantity-list">{sound.map((entry) => {
       const quantity = config.counts[entry.key] ?? 0;
-      return <div className={quantity > 0 ? "quantity-item active" : "quantity-item"} key={entry.key}><span>{entry.label}</span><div><button aria-label={`Quitar ${entry.label}`} disabled={quantity === 0} onClick={() => actions.changeUnits(entry.key, -1)}>−</button><strong>{quantity}</strong><button aria-label={`Agregar ${entry.label}`} disabled={quantity >= entry.maxUnits} onClick={() => actions.changeUnits(entry.key, 1)}>+</button></div></div>;
+      return <div className={quantity > 0 ? "quantity-item active" : "quantity-item"} key={entry.key}><span>{tx(entry.label)}</span><div><button aria-label={`${tx("Quitar")} ${tx(entry.label)}`} disabled={quantity === 0} onClick={() => actions.changeUnits(entry.key, -1)}>−</button><strong>{quantity}</strong><button aria-label={`${tx("Agregar")} ${tx(entry.label)}`} disabled={quantity >= entry.maxUnits} onClick={() => actions.changeUnits(entry.key, 1)}>+</button></div></div>;
     })}</div></div>
 
-    <div className={`config-group mobile-pane ${category === "lighting" ? "mobile-active" : ""}`}><h3>Iluminación</h3><div className="chips">{lighting.map((entry) => {
+    <div className={`config-group mobile-pane ${category === "lighting" ? "mobile-active" : ""}`}><h3>{tx("Iluminación")}</h3><div className="chips">{lighting.map((entry) => {
       const on = (config.counts[entry.key] ?? 0) > 0;
-      return <button key={entry.key} className={on ? "chip active" : "chip"} aria-pressed={on} onClick={() => actions.toggleGroup(entry.key)}>{entry.label}</button>;
-    })}</div><p className="lighting-reference-note">La cantidad de equipos se determinará al preparar el presupuesto. La cantidad visualizada en el escenario es solo de referencia.</p></div>
+      return <button key={entry.key} className={on ? "chip active" : "chip"} aria-pressed={on} onClick={() => actions.toggleGroup(entry.key)}>{tx(entry.label)}</button>;
+    })}</div><p className="lighting-reference-note">{tx("La cantidad de equipos se determinará al preparar el presupuesto. La cantidad visualizada en el escenario es solo de referencia.")}</p></div>
 
-    <div className={`config-group mobile-pane ${category === "extras" ? "mobile-active" : ""}`}><h3>DJ y extras</h3><div className="chips">{EXTRAS.map((item) => <button key={item} className={config.extras.includes(item) ? "chip active" : "chip"} aria-pressed={config.extras.includes(item)} onClick={() => actions.toggleExtra(item)}>{item}</button>)}</div></div>
+    <div className={`config-group mobile-pane ${category === "extras" ? "mobile-active" : ""}`}><h3>{tx("DJ y extras")}</h3><div className="chips">{EXTRAS.map((item) => <button key={item} className={config.extras.includes(item) ? "chip active" : "chip"} aria-pressed={config.extras.includes(item)} onClick={() => actions.toggleExtra(item)}>{tx(item)}</button>)}</div></div>
   </div>;
 }

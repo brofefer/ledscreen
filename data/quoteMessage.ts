@@ -13,6 +13,7 @@ export type QuoteCatalogEntry = { key: string; label: string; category: "sound" 
 export type QuoteScreen = { kind: string; width: number; height: number };
 
 export type QuoteInput = {
+  eventProfile?: string;
   screens: QuoteScreen[];
   /** Unidades por clave de catálogo. */
   counts: Record<string, number>;
@@ -21,7 +22,7 @@ export type QuoteInput = {
   catalog: QuoteCatalogEntry[];
 };
 
-export type SummaryRow = { category: "Pantalla" | "Sonido" | "Iluminación" | "Servicios"; label: string };
+export type SummaryRow = { category: "Evento" | "Pantalla" | "Sonido" | "Iluminación" | "Servicios"; label: string };
 
 const meters = (value: number) => String(value).replace(".", ",");
 
@@ -47,8 +48,10 @@ export function groupedScreens(screens: QuoteScreen[]) {
 }
 
 /** Una fila por ítem elegido, en el orden en que se muestran. */
-export function summaryRows({ screens, counts, extras, catalog }: QuoteInput): SummaryRow[] {
-  const rows: SummaryRow[] = groupedScreens(screens).map((label) => ({ category: "Pantalla" as const, label }));
+export function summaryRows({ eventProfile, screens, counts, extras, catalog }: QuoteInput): SummaryRow[] {
+  const rows: SummaryRow[] = [];
+  if (eventProfile) rows.push({ category: "Evento", label: eventProfile });
+  rows.push(...groupedScreens(screens).map((label) => ({ category: "Pantalla" as const, label })));
   const units = (category: "sound" | "lighting") => catalog
     .filter((entry) => entry.category === category && (counts[entry.key] ?? 0) > 0)
     .map((entry) => category === "lighting" ? entry.label : `${entry.label} × ${counts[entry.key]}`);
@@ -63,7 +66,9 @@ export function quoteLines(input: QuoteInput) {
   const rows = summaryRows(input);
   const pick = (category: SummaryRow["category"]) => rows.filter((row) => row.category === category).map((row) => row.label);
   const screens = pick("Pantalla");
-  const lines = [`${input.screens.length > 1 ? "Pantallas" : "Pantalla"}: ${screens.join(", ")}`];
+  const lines: string[] = [];
+  if (input.eventProfile) lines.push(`Evento: ${input.eventProfile}`);
+  lines.push(`${input.screens.length > 1 ? "Pantallas" : "Pantalla"}: ${screens.join(", ")}`);
   for (const category of ["Sonido", "Iluminación", "Servicios"] as const) {
     const picked = pick(category);
     if (picked.length) lines.push(`${category}: ${picked.join(", ")}`);

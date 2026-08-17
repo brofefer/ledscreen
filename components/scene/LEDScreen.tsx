@@ -28,19 +28,15 @@ export default function LEDScreen({ kind, width, height }: { kind: ScreenKind; w
   useEffect(() => () => { pixels.dispose(); }, [pixels]);
   useEffect(() => () => { logo.dispose(); }, [logo]);
 
-  const still = useMemo(() => (
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  ), []);
-
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
     // El degradado sube un mosaico completo por período, igual que `vx-scan`.
     // Se deriva del reloj y no se acumula, para que todas las pantallas vayan
     // sincronizadas aunque se agreguen en distinto momento.
-    if (!still) waveRef.current.offset.y = -((time / SCAN_PERIOD) % 1);
+    waveRef.current.offset.y = -((time / SCAN_PERIOD) % 1);
     // Latido suave del isotipo, equivalente al `vx-logo-glow` del prototipo.
     if (logoMaterial.current) {
-      logoMaterial.current.opacity = still ? 1 : 0.9 + 0.1 * Math.sin((time * Math.PI * 2) / 4);
+      logoMaterial.current.opacity = 0.9 + 0.1 * Math.sin((time * Math.PI * 2) / 4);
     }
   });
 

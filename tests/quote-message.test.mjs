@@ -30,6 +30,13 @@ test("una configuración mínima deja sólo la pantalla", () => {
   assert.deepEqual(quoteLines(input()), ["Pantalla: LED Outdoor — 6 × 4 m"]);
 });
 
+test("el tipo de evento se incluye cuando fue elegido en el configurador", () => {
+  assert.deepEqual(quoteLines(input({ eventProfile: "Corporativo" })), [
+    "Evento: Corporativo",
+    "Pantalla: LED Outdoor — 6 × 4 m",
+  ]);
+});
+
 test("el tótem se nombra por su tipo, sin repetir la medida", () => {
   assert.equal(screenLabelOf(totem), "E-Poster 1×2");
 });

@@ -6,15 +6,17 @@ import * as items from "../data/sceneItems";
 import type { SceneItem } from "../data/sceneItems";
 import * as screensApi from "../data/screens";
 import type { ScreenItem, ScreenKind } from "../data/screens";
+import { DEFAULT_EVENT_PROFILE, type EventProfileKey } from "../data/eventProfiles";
 
 export type { SceneItem, ScreenItem, ScreenKind };
 /** Se mantiene el nombre anterior: el tipo de una pantalla suelta. */
 export type ScreenType = ScreenKind;
 
 export function useConfigurator() {
-  const [screens, setScreens] = useState<ScreenItem[]>(() => screensApi.addScreen([], "LED Outdoor", { width: 6, height: 4 }));
+  const [screens, setScreens] = useState<ScreenItem[]>(() => screensApi.addScreen([], "LED Indoor", { width: 6, height: 4 }));
   const [list, setList] = useState<SceneItem[]>([]);
   const [extras, setExtras] = useState<string[]>([]);
+  const [eventProfile, setEventProfile] = useState<EventProfileKey>(DEFAULT_EVENT_PROFILE);
 
   const changeUnits = useCallback((key: string, delta: number) => {
     const spec = itemSpec(key);
@@ -68,11 +70,12 @@ export function useConfigurator() {
     toggleGroup,
     toggleExtra,
     removeSceneInstance,
-  }), [addScreen, removeScreen, setScreenKind, setScreenSize, setScreenCustom, resizeScreen, changeUnits, toggleGroup, toggleExtra, removeSceneInstance]);
+    setEventProfile,
+  }), [addScreen, removeScreen, setScreenKind, setScreenSize, setScreenCustom, resizeScreen, changeUnits, toggleGroup, toggleExtra, removeSceneInstance, setEventProfile]);
 
   return useMemo(() => ({
-    config: { screens, items: list, counts, extras },
+    config: { screens, items: list, counts, extras, eventProfile },
     actions,
     itemsOf,
-  }), [screens, list, counts, extras, actions, itemsOf]);
+  }), [screens, list, counts, extras, eventProfile, actions, itemsOf]);
 }

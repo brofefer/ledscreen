@@ -14,9 +14,10 @@ type Props = {
 const SCREEN_BASE_Y = 1;
 
 export default function ScreenLayer({ screens, stageSpan, transforms, selectedId, moveMode, onSelect, onChange, onToggleMove, onReset, onRemove }: Props) {
-  // Margen a los costados para poder correrlas más allá de su lugar por defecto.
-  const half = Math.max(8, stageSpan + 3) / 2 + 1.5;
-  const bounds = { minX: -half, maxX: half, minZ: -1.4, maxZ: 0.4 };
+  // El área útil crece con el montaje. También deja llevar una pantalla hacia
+  // el público para probar configuraciones que no estén al fondo de la tarima.
+  const half = Math.max(8, stageSpan + 3) / 2 + Math.max(2, stageSpan * .12);
+  const bounds = { minX: -half, maxX: half, minZ: -2.2, maxZ: Math.max(4.5, stageSpan * .42) };
   const canRemove = screens.length > 1;
 
   return <group>{layoutScreens(screens).map(({ item, x }) => (

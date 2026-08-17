@@ -12,9 +12,8 @@ type Props = {
 };
 
 export default function EquipmentLayer({ items, extras, screenWidth, transforms, selectedId, moveMode, onSelect, onChange, onToggleMove, onReset, onRemove }: Props) {
-  const stageHalf = Math.max(8, screenWidth + 3) / 2 - .45;
-  const bounds = { minX: -stageHalf, maxX: stageHalf, minZ: -.75, maxZ: 1.95 };
-  const forbidden = { minX: -screenWidth / 2 - .45, maxX: screenWidth / 2 + .45, minZ: -.75, maxZ: .42 };
+  const stageHalf = Math.max(8, screenWidth + 3) / 2 + Math.max(1.5, screenWidth * .1);
+  const bounds = { minX: -stageHalf, maxX: stageHalf, minZ: -1.5, maxZ: Math.max(4.8, screenWidth * .45) };
 
   // El orden de colocación sale del slot, no del índice del array: así borrar
   // una unidad del medio no reubica a las demás.
@@ -37,8 +36,8 @@ export default function EquipmentLayer({ items, extras, screenWidth, transforms,
       const size: [number, number, number] = definition.kind === "subwoofer"
         ? [1.12, .72, .86]
         : [definition.kind === "column" ? .58 : .82, definition.height + .2, .72];
-      return <SceneObject key={item.id} id={item.id} label={`${definition.label} · ${ordinals.get(item.id)}`} defaultPosition={[initialX, .82, initialZ]} transform={transforms[item.id]} selected={selectedId === item.id} moveMode={moveMode && selectedId === item.id} bounds={bounds} forbidden={forbidden} size={size} onSelect={onSelect} onChange={onChange} onToggleMove={onToggleMove} onReset={onReset} onRemove={onRemove}><Speaker definition={definition} mirrored={side > 0} /></SceneObject>;
+      return <SceneObject key={item.id} id={item.id} label={`${definition.label} · ${ordinals.get(item.id)}`} defaultPosition={[initialX, .82, initialZ]} transform={transforms[item.id]} selected={selectedId === item.id} moveMode={moveMode && selectedId === item.id} bounds={bounds} size={size} onSelect={onSelect} onChange={onChange} onToggleMove={onToggleMove} onReset={onReset} onRemove={onRemove}><Speaker definition={definition} mirrored={side > 0} /></SceneObject>;
     })}
-    {(extras.includes("Consola DJ") || extras.includes("DJ")) && <SceneObject id="dj-area" label={extras.includes("Consola DJ") ? "Consola DJ" : "DJ"} defaultPosition={[0, 1.345, 1.25]} transform={transforms["dj-area"]} selected={selectedId === "dj-area"} moveMode={moveMode && selectedId === "dj-area"} bounds={{ minX: -2.6, maxX: 2.6, minZ: .65, maxZ: 1.85 }} size={[2.35, 2.15, .85]} onSelect={onSelect} onChange={onChange} onToggleMove={onToggleMove} onReset={onReset} onRemove={onRemove}><DJBooth showConsole={extras.includes("Consola DJ")} showDJ={extras.includes("DJ")} /></SceneObject>}
+    {(extras.includes("Consola DJ") || extras.includes("DJ")) && <SceneObject id="dj-area" label={extras.includes("Consola DJ") ? "Consola DJ" : "DJ"} defaultPosition={[0, 1.345, 1.25]} transform={transforms["dj-area"]} selected={selectedId === "dj-area"} moveMode={moveMode && selectedId === "dj-area"} bounds={bounds} size={[2.35, 2.15, .85]} onSelect={onSelect} onChange={onChange} onToggleMove={onToggleMove} onReset={onReset} onRemove={onRemove}><DJBooth showConsole={extras.includes("Consola DJ")} showDJ={extras.includes("DJ")} /></SceneObject>}
   </group>;
 }

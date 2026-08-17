@@ -50,11 +50,11 @@ function getWaveImage() {
     size / 2 - (dx * length) / 2, size / 2 - (dy * length) / 2,
     size / 2 + (dx * length) / 2, size / 2 + (dy * length) / 2,
   );
-  PANEL_GRADIENT.forEach((color, index) => gradient.addColorStop(index / (PANEL_GRADIENT.length - 1), color));
+  PANEL_GRADIENT.forEach((color, index, colors) => gradient.addColorStop(index / (colors.length - 1), color));
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
   waveImage = canvas;
-  return canvas;
+  return waveImage;
 }
 
 /** Punto oscuro por celda: es la separación entre píxeles del panel. */

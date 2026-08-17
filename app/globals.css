@@ -89,7 +89,7 @@ a:hover { color: oklch(0.86 0.12 230) }
 
 /* ---------- Keyframes ---------- */
 @keyframes vx-marq { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-@keyframes vx-pulse { 0%, 100% { opacity: .5 } 50% { opacity: 1 } }
+@keyframes vx-pulse { 0%, 100% { opacity: .72; transform: scale(.92) } 50% { opacity: 1; transform: scale(1.08) } }
 @keyframes vx-scan { from { background-position: 0 0 } to { background-position: 0 -220px } }
 @keyframes vx-spin { to { transform: rotate(360deg) } }
 @keyframes vx-logo-draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
@@ -269,7 +269,7 @@ a:hover { color: oklch(0.86 0.12 230) }
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 12px var(--accent);
-  animation: vx-pulse 1.8s infinite;
+  animation: vx-pulse 4.8s ease-in-out infinite;
 }
 .hero h1 {
   font-family: var(--display);
@@ -342,7 +342,8 @@ a:hover { color: oklch(0.86 0.12 230) }
   display: flex;
   width: max-content;
   white-space: nowrap;
-  animation: vx-marq 26s linear infinite;
+  animation: vx-marq 58s linear infinite;
+  will-change: transform;
 }
 .marquee-set {
   display: flex;
@@ -668,6 +669,7 @@ a:hover { color: oklch(0.86 0.12 230) }
    Sólo se unificó el acento con el resto del sitio.
    ============================================================ */
 .configurator-section { padding: 88px clamp(16px, 4vw, 60px) 100px; background: #0a0c11; scroll-margin-top: 86px }
+.workspace-open, .workspace-close { display: none }
 .configurator-intro { max-width: 1500px; margin: 0 auto 34px }
 .configurator-intro h2 {
   font-family: var(--display);
@@ -691,6 +693,22 @@ a:hover { color: oklch(0.86 0.12 230) }
   background: #0e1118;
 }
 .config-panel { grid-area: panel; padding: 36px; overflow: auto; max-height: 800px }
+.event-profile-picker { padding-bottom: 24px; border-bottom: 1px solid var(--border) }
+.event-profile-picker > span { display: block; margin-bottom: 12px; font-family: var(--display); font-size: 14px; font-weight: 700; color: #eef3f8 }
+.event-profile-picker > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px }
+.event-profile-picker button {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .025);
+  color: #aeb6c1;
+  padding: 8px 9px;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.event-profile-picker button.active { border-color: oklch(0.72 0.17 230 / .55); background: oklch(0.72 0.17 230 / .11); color: #e7fbff }
+.event-profile-picker > small { display: block; margin-top: 9px; color: #77818e; font-size: 10px; line-height: 1.45 }
 .config-scene { grid-area: scene; min-width: 0; min-height: 720px }
 .config-panel h2 { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 4vw, 50px); line-height: 1; margin: 0 0 14px }
 .config-panel > p { color: var(--muted); line-height: 1.55 }
@@ -715,8 +733,8 @@ a:hover { color: oklch(0.86 0.12 230) }
   font-size: 11px;
   line-height: 1.5;
 }
-.scene-shell { position: relative; width: 100%; height: 100%; min-height: 640px; background: #090c12 }
-.scene-shell canvas { touch-action: none }
+.scene-shell { position: relative; width: 100%; height: 100%; min-height: 640px; background: #090c12; user-select: none; -webkit-user-select: none }
+.scene-shell canvas { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none }
 .viewer-badge, .viewer-help {
   position: absolute;
   left: 20px;
@@ -1032,6 +1050,28 @@ a:hover { color: oklch(0.86 0.12 230) }
 
 /* ---------- 05 FAQ ---------- */
 .faq-original { padding: clamp(72px, 10vw, 140px) clamp(20px, 5vw, 64px); max-width: 900px; margin: 0 auto }
+.faq-groups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 30px 0 18px;
+}
+.faq-groups button {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 10px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, .025);
+  font: 700 13px var(--body);
+  cursor: pointer;
+}
+.faq-groups button.active { border-color: var(--accent); color: var(--text); background: oklch(0.72 0.17 230 / .1) }
+.faq-groups small { color: var(--accent); font-size: 10px }
 .faq-list { display: flex; flex-direction: column; gap: 12px }
 .faq-list article {
   border: 1px solid rgba(255, 255, 255, .09);
@@ -1068,14 +1108,18 @@ a:hover { color: oklch(0.86 0.12 230) }
 .faq-list button i.open { transform: rotate(45deg) }
 .faq-answer { max-height: 0; opacity: 0; overflow: hidden; transition: max-height .5s ease, opacity .4s ease }
 .faq-answer.open { max-height: 520px; opacity: 1 }
-.faq-answer p {
+.faq-answer-content {
   padding: 0 24px 24px;
-  margin: 0;
+  color: #a6acb8;
   font-size: 16px;
   line-height: 1.62;
-  color: #a6acb8;
+}
+.faq-answer p {
+  margin: 0;
   text-wrap: pretty;
 }
+.faq-answer ul { margin: 10px 0 0; padding-left: 19px; columns: 2; column-gap: 28px }
+.faq-answer li { break-inside: avoid; margin: 4px 0 }
 
 /* ---------- 06 Contacto ---------- */
 .contact-original {
@@ -1132,6 +1176,16 @@ a:hover { color: oklch(0.86 0.12 230) }
   background: rgba(255, 255, 255, .03);
 }
 .contact-form label > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%) }
+.contact-form .date-field { display: grid; gap: 7px }
+.contact-form .date-field > span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  color: var(--dim);
+  font-size: 13px;
+}
 .contact-form input, .contact-form textarea {
   width: 100%;
   background: rgba(255, 255, 255, .04);
@@ -1174,6 +1228,9 @@ footer {
 footer .brand span { font-size: 16px }
 .footer-tagline { font-size: 14px; color: var(--dim); text-align: center }
 .footer-copy { font-size: 13px; color: #565c6b }
+.footer-credit { flex-basis: 100%; color: #6f7683; font-size: 12px; text-align: center }
+.footer-credit a { color: #aeb6c2; text-decoration: none; transition: color .2s }
+.footer-credit a:hover, .footer-credit a:focus-visible { color: var(--accent) }
 
 /* ---------- Redes y WhatsApp (añadidos al prototipo) ---------- */
 .footer-socials, .mobile-socials { display: flex; gap: 10px }
@@ -1278,6 +1335,7 @@ footer .brand span { font-size: 16px }
 }
 
 @media (max-width: 900px) {
+  .configurator-section { --mobile-scene-height: max(420px, 58vh); }
   .configurator-section { padding: 64px 0 70px }
   .configurator-intro { padding: 0 20px; margin-bottom: 26px }
   .configurator-layout {
@@ -1290,7 +1348,7 @@ footer .brand span { font-size: 16px }
   }
   .config-scene {
     display: block;
-    height: 58vh;
+    height: var(--mobile-scene-height);
     min-height: 420px;
     position: sticky;
     top: 70px;
@@ -1298,7 +1356,7 @@ footer .brand span { font-size: 16px }
     overflow: visible;
     isolation: isolate;
   }
-  .scene-shell { min-height: 100%; height: 58vh; overflow: visible }
+  .scene-shell { min-height: 100%; height: var(--mobile-scene-height); overflow: visible }
   .config-panel {
     position: relative;
     z-index: 3;
@@ -1314,9 +1372,9 @@ footer .brand span { font-size: 16px }
   .quote-summary-cta a { max-width: none }
   .viewer-help { display: none }
   .mobile-category-tabs {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    position: relative;
+    top: auto;
+    z-index: 7;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
@@ -1341,11 +1399,85 @@ footer .brand span { font-size: 16px }
   .screen-scene-label strong, .screen-scene-label span { font-size: 9px }
   .viewer-badge { display: none }
   .social-rail { display: none }
+  .workspace-open {
+    position: sticky;
+    top: 82px;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: calc(100% - 40px);
+    margin: 0 20px 14px;
+    border: 1px solid oklch(0.72 0.17 230 / .55);
+    border-radius: 9px;
+    background: rgba(7, 14, 20, .94);
+    color: #e8fbff;
+    padding: 12px 16px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .38);
+  }
+  .configurator-workspace-open { overflow: hidden; overscroll-behavior: none }
+  .configurator-section.workspace-active {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    height: 100dvh;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .workspace-active .workspace-open, .workspace-active .configurator-intro, .workspace-active .quote-summary { display: none }
+  .workspace-active .workspace-close {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+    z-index: 130;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 50%;
+    background: rgba(7, 10, 15, .9);
+    color: #fff;
+    font-size: 21px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  }
+  .workspace-active .configurator-layout { height: 100dvh; min-height: 0; overflow: hidden }
+  .workspace-active .config-scene {
+    position: relative;
+    top: auto;
+    flex: 0 0 55dvh;
+    height: 55dvh;
+    min-height: 0;
+    z-index: 6;
+  }
+  .workspace-active .scene-shell { height: 55dvh; min-height: 0; overflow: hidden }
+  .workspace-active .config-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0;
+    padding: 0 20px max(28px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0;
+  }
+  .workspace-active .mobile-category-tabs {
+    position: sticky;
+    top: 0;
+    margin: 0 -4px 8px;
+    padding-top: 10px;
+  }
 }
 
 @media (max-width: 560px) {
-  .config-scene { height: 55vh; min-height: 370px }
-  .scene-shell { height: 55vh }
+  .faq-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px }
+  .faq-answer ul { columns: 1 }
+  .configurator-section { --mobile-scene-height: max(370px, 55vh); }
+  .config-scene { height: var(--mobile-scene-height); min-height: 370px }
+  .scene-shell { height: var(--mobile-scene-height) }
   .reset-view { top: 14px; right: 14px }
   .lighting-controls { right: 14px; top: 58px; flex-direction: column; align-items: flex-end }
   .lighting-controls button { padding: 7px 9px }
@@ -1361,5 +1493,4 @@ footer .brand span { font-size: 16px }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto }
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important }
 }
